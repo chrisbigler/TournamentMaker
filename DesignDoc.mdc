@@ -1,0 +1,85 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Professional Tournament Maker Color Scheme
+
+### Core Brand Colors
+| Color Name | Hex Code | RGB | Usage |
+|:-----------|:---------|:----|:------|
+| **Deep Navy** | #0F172A | rgb(15, 23, 42) | Primary brand, headers |
+| **Electric Blue** | #3B82F6 | rgb(59, 130, 246) | Primary actions, CTAs |
+| **Slate Gray** | #475569 | rgb(71, 85, 105) | Secondary elements |
+
+### Background Colors
+| Color Name | Hex Code | RGB | Usage |
+|:-----------|:---------|:----|:------|
+| **Pure White** | #FFFFFF | rgb(255, 255, 255) | Main background |
+| **Cool Gray** | #F8FAFC | rgb(248, 250, 252) | Card backgrounds |
+| **Light Gray** | #F1F5F9 | rgb(241, 245, 249) | Section dividers |
+
+### Text Colors
+| Color Name | Hex Code | RGB | Usage |
+|:-----------|:---------|:----|:------|
+| **Rich Black** | #0F172A | rgb(15, 23, 42) | Primary text |
+| **Dark Gray** | #334155 | rgb(51, 65, 85) | Secondary text |
+| **Medium Gray** | #64748B | rgb(100, 116, 139) | Placeholder text |
+| **Light Gray** | #94A3B8 | rgb(148, 163, 184) | Disabled text |
+
+### Accent Colors
+| Color Name | Hex Code | RGB | Usage |
+|:-----------|:---------|:----|:------|
+| **Success Green** | #10B981 | rgb(16, 185, 129) | Success states |
+| **Warning Orange** | #F59E0B | rgb(245, 158, 11) | Warnings |
+| **Error Red** | #EF4444 | rgb(239, 68, 68) | Errors |
+| **Info Blue** | #0EA5E9 | rgb(14, 165, 233) | Information |
+
+### Button Hierarchy
+| Type | Background | Text | Usage |
+|:-----|:-----------|:-----|:------|
+| **Primary** | Electric Blue (#3B82F6) | White (#FFFFFF) | Main actions |
+| **Secondary** | White (#FFFFFF) | Electric Blue (#3B82F6) | Secondary actions |
+| **Ghost** | Transparent | Slate Gray (#475569) | Tertiary actions |
+
+### Redesigned App Concept
+
+**Header:**
+- Background: Deep Navy (#0F172A)
+- Text: White (#FFFFFF)
+- Status bar: Match system default
+
+**Main Content:**
+- Background: Pure White (#FFFFFF)
+- Cards: Cool Gray (#F8FAFC) with subtle shadow
+- Card borders: None (use shadows instead)
+
+**Action Cards:**
+- Primary CTA: Electric Blue (#3B82F6) background
+- Secondary actions: White cards with blue text
+- Icons: Match text color, slightly larger
+
+**Typography:**
+- Headers: Bold, Deep Navy (#0F172A)
+- Body: Regular, Dark Gray (#334155)
+- Captions: Regular, Medium Gray (#64748B)
+
+### Design Principles
+1. **Minimalist**: Clean white space, no unnecessary colors
+2. **Professional**: Navy and blue convey trust and competence
+3. **Accessible**: High contrast ratios (WCAG AAA compliant)
+4. **Modern**: Subtle shadows instead of borders
+5. **Consistent**: Limited color palette for cohesion
+
+### Shadow System
+```css
+/* Card shadow */
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 
+            0 1px 2px rgba(0, 0, 0, 0.06);
+
+/* Hover shadow */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 
+            0 2px 4px rgba(0, 0, 0, 0.06);
+```
+
+This color scheme transforms your app from playful to professional, perfect for serious tournament management while maintaining modern design standards.
