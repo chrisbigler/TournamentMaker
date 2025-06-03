@@ -1,4 +1,32 @@
 {
-  "name": "TournamentMaker",
-  "displayName": "TournamentMaker"
+  "expo": {
+    "name": "TournamentMaker",
+    "slug": "TournamentMaker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.tournamentmaker"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourcompany.tournamentmaker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
 }

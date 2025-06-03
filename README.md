@@ -1,97 +1,167 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Tournament Maker
 
-# Getting Started
+A React Native mobile app for managing camping group tournaments with team-based competitions.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+### ✅ Completed Core Features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **Player Management**: Create, edit, and delete player profiles with gender tracking
+- **Team Creation**: Manual and Boy/Girl pairing modes for automatic team generation
+- **Tournament Setup**: Create tournaments with selected players and team modes
+- **Bracket Generation**: Single-elimination brackets with automatic bye handling
+- **Score Tracking**: Large touch-friendly scoring interface with quick score buttons
+- **Match Management**: Complete matches and automatic winner advancement
+- **Player Groups**: Save frequently used player groups for quick tournament setup
+- **Win/Loss Tracking**: Individual player statistics across all tournaments
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 🎯 Key Design Features
 
-```sh
-# Using npm
-npm start
+- **Outdoor-Friendly UI**: Large touch targets and high contrast colors for sunlight visibility
+- **Simple Navigation**: Maximum 3 taps to reach any feature
+- **Local Storage**: SQLite database for offline functionality
+- **Cross-Platform**: Works on both iOS and Android
 
-# OR using Yarn
-yarn start
+## Project Structure
+
+```
+TournamentMaker/
+├── src/
+│   ├── screens/           # All UI screens
+│   │   ├── HomeScreen.tsx
+│   │   ├── PlayersScreen.tsx
+│   │   ├── CreatePlayerScreen.tsx
+│   │   ├── CreateTournamentScreen.tsx
+│   │   ├── TournamentScreen.tsx
+│   │   ├── MatchScreen.tsx
+│   │   ├── PlayerGroupsScreen.tsx
+│   │   └── CreatePlayerGroupScreen.tsx
+│   ├── services/          # Business logic and data services
+│   │   ├── DatabaseService.ts
+│   │   └── TournamentService.ts
+│   ├── navigation/        # Navigation configuration
+│   │   └── AppNavigator.tsx
+│   └── types/            # TypeScript type definitions
+│       └── index.ts
+├── App.tsx               # Main app entry point
+└── package.json          # Dependencies and scripts
 ```
 
-## Step 2: Build and run your app
+## Setup Instructions
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Prerequisites
 
-### Android
+- Node.js (>= 18)
+- React Native development environment
+- iOS Simulator (for iOS development)
+- Android Studio and emulator (for Android development)
 
-```sh
-# Using npm
-npm run android
+### Installation
 
-# OR using Yarn
-yarn android
-```
+1. **Clone and navigate to the project:**
+   ```bash
+   cd TournamentMaker
+   ```
 
-### iOS
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+3. **Install iOS dependencies (iOS only):**
+   ```bash
+   cd ios && pod install && cd ..
+   ```
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+4. **Run the app:**
+   
+   For iOS:
+   ```bash
+   npm run ios
+   ```
+   
+   For Android:
+   ```bash
+   npm run android
+   ```
 
-```sh
-bundle install
-```
+## Usage Flow
 
-Then, and every time you update your native dependencies, run:
+1. **First Time Setup:**
+   - Launch the app
+   - Navigate to "Manage Players"
+   - Add player profiles with names, nicknames, and gender
 
-```sh
-bundle exec pod install
-```
+2. **Create Tournament:**
+   - Go to "Create Tournament"
+   - Enter tournament name
+   - Choose team creation mode (Manual or Boy/Girl)
+   - Select players to participate
+   - Create tournament
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+3. **Play Tournament:**
+   - View the generated bracket
+   - Tap on matches to enter scores
+   - Use quick score buttons (+1, +2, +3) for fast scoring
+   - Complete matches to advance winners
+   - Continue until champion is determined
 
-```sh
-# Using npm
-npm run ios
+4. **Player Groups (Optional):**
+   - Create saved groups of frequently used players
+   - Use groups for quick tournament setup
 
-# OR using Yarn
-yarn ios
-```
+## Technical Details
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Dependencies
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- **React Native**: Cross-platform mobile framework
+- **React Navigation**: Screen navigation and routing
+- **SQLite**: Local database storage
+- **TypeScript**: Type safety and better development experience
 
-## Step 3: Modify your app
+### Database Schema
 
-Now that you have successfully run the app, let's make changes!
+- **Players**: id, name, nickname, gender, wins, losses, timestamps
+- **Teams**: id, player1_id, player2_id, team_name, timestamp
+- **Tournaments**: id, name, status, current_round, winner_id, timestamps
+- **Matches**: id, tournament_id, team1_id, team2_id, scores, round, completion status
+- **Player Groups**: id, name, timestamps
+- **Player Group Members**: group_id, player_id relationships
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Architecture
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+- **MVVM Pattern**: Clear separation between UI, business logic, and data
+- **Service Layer**: DatabaseService for data persistence, TournamentService for business logic
+- **Type Safety**: Comprehensive TypeScript interfaces for all data models
+- **Navigation**: Stack-based navigation with proper parameter typing
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Future Enhancements
 
-## Congratulations! :tada:
+- Point differential seeding for advanced bracket generation
+- Tournament history and results export
+- Multiple bracket types (double elimination, round robin)
+- Player statistics and analytics
+- Tournament templates and presets
+- Photo support for players and tournaments
 
-You've successfully run and modified your React Native App. :partying_face:
+## Development
 
-### Now what?
+### Adding New Features
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+1. Define types in `src/types/index.ts`
+2. Add database methods in `src/services/DatabaseService.ts`
+3. Implement business logic in `src/services/TournamentService.ts`
+4. Create UI screens in `src/screens/`
+5. Update navigation in `src/navigation/AppNavigator.tsx`
 
-# Troubleshooting
+### Testing
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Run the app in development mode and test all user flows:
+- Player creation and management
+- Tournament creation with different team modes
+- Match scoring and completion
+- Player group management
 
-# Learn More
+## License
 
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project is for personal use and camping group tournaments.
