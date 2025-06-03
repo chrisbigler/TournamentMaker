@@ -163,7 +163,7 @@ const BottomTabNavigator = () => (
         height: 88,
         ...theme.shadows.card,
       },
-      tabBarActiveTintColor: theme.colors.primary.electricBlue,
+      tabBarActiveTintColor: theme.colors.primary.accentGreen,
       tabBarInactiveTintColor: theme.colors.text.mediumGray,
       tabBarLabelStyle: {
         fontSize: 12,

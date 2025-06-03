@@ -52,7 +52,7 @@ const Button: React.FC<ButtonProps> = ({
         return theme.colors.text.white;
       case 'secondary':
       case 'outline':
-        return theme.colors.primary.electricBlue;
+        return theme.colors.primary.accentGreen;
       case 'ghost':
         return theme.colors.primary.slateGray;
       default:
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   
   // Variants - Updated for professional design
   primary: {
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.primary.accentGreen,
     ...theme.shadows.card,
   },
   secondary: {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.primary.accentGreen,
   },
   
   // Sizes
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     color: theme.colors.text.white,
   },
   secondaryText: {
-    color: theme.colors.primary.electricBlue,
+    color: theme.colors.primary.accentGreen,
   },
   ghostText: {
     color: theme.colors.primary.slateGray,
   },
   outlineText: {
-    color: theme.colors.primary.electricBlue,
+    color: theme.colors.primary.accentGreen,
   },
   disabledText: {
     opacity: 0.7,

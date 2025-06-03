@@ -137,7 +137,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
   const renderGenderLabel = (gender: string) => {
     const isMale = gender.toLowerCase() === 'male';
     const iconName = isMale ? 'human-male' : 'human-female';
-    const iconColor = isMale ? theme.colors.primary.electricBlue : '#E91E63';
+    const iconColor = isMale ? theme.colors.primary.accentGreen : '#E91E63';
     
     return (
       <View style={styles.genderContainer}>
@@ -255,7 +255,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator 
             size="large" 
-            color={theme.colors.primary.electricBlue} 
+            color={theme.colors.primary.accentGreen} 
           />
           <Text style={styles.loadingText}>
             {fixingStats ? 'Resetting player statistics...' : 'Loading players...'}

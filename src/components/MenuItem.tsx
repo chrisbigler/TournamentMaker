@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     ...theme.shadows.card,
   },
   primary: {
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.primary.accentGreen,
   },
   secondary: {
     backgroundColor: theme.colors.primary.deepNavy,

@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   placeholder: {
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.primary.accentGreen,
   },
   initials: {
     color: theme.colors.background.pureWhite,
