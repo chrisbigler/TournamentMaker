@@ -170,7 +170,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
             {item.gender}
           </Text>
         </View>
-        <View style={styles.selectionIndicator}>
+        <View style={[styles.selectionIndicator, isSelected && styles.selectionIndicatorSelected]}>
           {isSelected && <Text style={styles.checkmark}>✓</Text>}
         </View>
       </TouchableOpacity>
@@ -277,8 +277,14 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background.pureWhite,
     },
     playerCardSelected: {
-      backgroundColor: theme.colors.accent.successGreen,
+      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
       borderColor: theme.colors.accent.successGreen,
+      borderWidth: 2,
+      shadowColor: theme.colors.accent.successGreen,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     playerInfo: {
       flex: 1,
@@ -289,7 +295,8 @@ const createStyles = (theme: Theme) =>
       marginBottom: 2,
     },
     playerNameSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.richBlack,
+      fontWeight: '600',
     },
     playerNickname: {
       ...theme.textStyles.bodySmall,
@@ -298,7 +305,8 @@ const createStyles = (theme: Theme) =>
       marginBottom: 2,
     },
     playerNicknameSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.darkGray,
+      fontWeight: '500',
     },
     playerGender: {
       ...theme.textStyles.caption,
@@ -306,18 +314,28 @@ const createStyles = (theme: Theme) =>
       textTransform: 'capitalize',
     },
     playerGenderSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.mediumGray,
+      fontWeight: '500',
     },
     selectionIndicator: {
-      width: 24,
-      height: 24,
+      width: 32,
+      height: 32,
       alignItems: 'center',
       justifyContent: 'center',
+      borderRadius: 16,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: theme.colors.light.border,
+    },
+    selectionIndicatorSelected: {
+      backgroundColor: theme.colors.accent.successGreen,
+      borderColor: theme.colors.accent.successGreen,
     },
     checkmark: {
       ...theme.textStyles.body,
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.background.pureWhite,
       fontWeight: 'bold',
+      fontSize: 16,
     },
     emptyState: {
       alignItems: 'center',
@@ -327,7 +345,7 @@ const createStyles = (theme: Theme) =>
       ...theme.textStyles.body,
       color: theme.colors.text.darkGray,
       textAlign: 'center',
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing.md,
     },
     buttonContainer: {
       padding: theme.spacing.lg,

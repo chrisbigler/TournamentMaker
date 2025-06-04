@@ -167,7 +167,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
             {item.gender}
           </Text>
         </View>
-        <View style={styles.selectionIndicator}>
+        <View style={[styles.selectionIndicator, isSelected && styles.selectionIndicatorSelected]}>
           {isSelected && <Text style={styles.checkmark}>✓</Text>}
         </View>
       </TouchableOpacity>
@@ -236,7 +236,10 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
                   {option.description}
                 </Text>
               </View>
-              <View style={styles.radioButton}>
+              <View style={[
+                styles.radioButton,
+                teamMode === option.mode && styles.radioButtonSelectedContainer,
+              ]}>
                 {teamMode === option.mode && <View style={styles.radioButtonSelected} />}
               </View>
             </TouchableOpacity>
@@ -292,7 +295,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
                       {item.players.length} players
                     </Text>
                   </View>
-                  <View style={styles.selectionIndicator}>
+                  <View style={[styles.selectionIndicator, selectedGroup?.id === item.id && styles.selectionIndicatorSelected]}>
                     {selectedGroup?.id === item.id && <Text style={styles.checkmark}>✓</Text>}
                   </View>
                 </TouchableOpacity>
@@ -353,11 +356,12 @@ const createStyles = (theme: Theme) =>
     },
     section: {
       margin: theme.spacing.lg,
+      marginBottom: theme.spacing.xl,
     },
     sectionTitle: {
       ...theme.textStyles.h4,
       color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.lg,
     },
     modeOption: {
       flexDirection: 'row',
@@ -366,12 +370,18 @@ const createStyles = (theme: Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.light.border,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.sm,
+      marginBottom: theme.spacing.md,
       backgroundColor: theme.colors.background.pureWhite,
     },
     modeOptionSelected: {
-      backgroundColor: theme.colors.background.coolGray,
+      backgroundColor: `${theme.colors.primary.electricBlue}15`, // 15% opacity
       borderColor: theme.colors.primary.electricBlue,
+      borderWidth: 2,
+      shadowColor: theme.colors.primary.electricBlue,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     modeInfo: {
       flex: 1,
@@ -382,28 +392,34 @@ const createStyles = (theme: Theme) =>
       marginBottom: theme.spacing.xs,
     },
     modeTitleSelected: {
-      color: theme.colors.primary.electricBlue,
+      color: theme.colors.text.richBlack,
+      fontWeight: '600',
     },
     modeDescription: {
       ...theme.textStyles.bodySmall,
       color: theme.colors.text.darkGray,
+      lineHeight: 18,
     },
     modeDescriptionSelected: {
-      color: theme.colors.primary.deepNavy,
+      color: theme.colors.text.darkGray,
     },
     radioButton: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
       borderWidth: 2,
       borderColor: theme.colors.light.border,
       alignItems: 'center',
       justifyContent: 'center',
+      backgroundColor: 'transparent',
+    },
+    radioButtonSelectedContainer: {
+      borderColor: theme.colors.primary.electricBlue,
     },
     radioButtonSelected: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
       backgroundColor: theme.colors.primary.electricBlue,
     },
     playerCard: {
@@ -413,12 +429,18 @@ const createStyles = (theme: Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.light.border,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.sm,
+      marginBottom: theme.spacing.md,
       backgroundColor: theme.colors.background.pureWhite,
     },
     playerCardSelected: {
-      backgroundColor: theme.colors.accent.successGreen,
+      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
       borderColor: theme.colors.accent.successGreen,
+      borderWidth: 2,
+      shadowColor: theme.colors.accent.successGreen,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     playerInfo: {
       flex: 1,
@@ -429,7 +451,8 @@ const createStyles = (theme: Theme) =>
       marginBottom: 2,
     },
     playerNameSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.richBlack,
+      fontWeight: '600',
     },
     playerNickname: {
       ...theme.textStyles.bodySmall,
@@ -438,7 +461,8 @@ const createStyles = (theme: Theme) =>
       marginBottom: 2,
     },
     playerNicknameSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.darkGray,
+      fontWeight: '500',
     },
     playerGender: {
       ...theme.textStyles.caption,
@@ -446,18 +470,28 @@ const createStyles = (theme: Theme) =>
       textTransform: 'capitalize',
     },
     playerGenderSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.mediumGray,
+      fontWeight: '500',
     },
     selectionIndicator: {
-      width: 24,
-      height: 24,
+      width: 32,
+      height: 32,
       alignItems: 'center',
       justifyContent: 'center',
+      borderRadius: 16,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: theme.colors.light.border,
+    },
+    selectionIndicatorSelected: {
+      backgroundColor: theme.colors.accent.successGreen,
+      borderColor: theme.colors.accent.successGreen,
     },
     checkmark: {
       ...theme.textStyles.body,
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.background.pureWhite,
       fontWeight: 'bold',
+      fontSize: 16,
     },
     emptyState: {
       alignItems: 'center',
@@ -471,6 +505,7 @@ const createStyles = (theme: Theme) =>
     },
     buttonContainer: {
       padding: theme.spacing.lg,
+      paddingTop: theme.spacing.xl,
     },
     loadingContainer: {
       flex: 1,
@@ -485,7 +520,7 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.lg,
     },
     sectionTitleInContainer: {
       ...theme.textStyles.h4,
@@ -498,12 +533,18 @@ const createStyles = (theme: Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.light.border,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.sm,
+      marginBottom: theme.spacing.md,
       backgroundColor: theme.colors.background.pureWhite,
     },
     groupCardSelected: {
-      backgroundColor: theme.colors.accent.successGreen,
+      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
       borderColor: theme.colors.accent.successGreen,
+      borderWidth: 2,
+      shadowColor: theme.colors.accent.successGreen,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     groupInfo: {
       flex: 1,
@@ -514,14 +555,16 @@ const createStyles = (theme: Theme) =>
       marginBottom: 2,
     },
     groupNameSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.richBlack,
+      fontWeight: '600',
     },
     groupPlayerCount: {
       ...theme.textStyles.bodySmall,
       color: theme.colors.text.darkGray,
     },
     groupPlayerCountSelected: {
-      color: theme.colors.accent.successGreen,
+      color: theme.colors.text.darkGray,
+      fontWeight: '500',
     },
   });
 
