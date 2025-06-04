@@ -18,6 +18,7 @@ import { RootStackParamList, Gender, Player } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import ImageService from '../services/ImageService';
 import ProfilePicture from '../components/ProfilePicture';
+import { theme } from '../theme';
 
 type CreatePlayerScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayer'>;
 type CreatePlayerScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayer'>;
@@ -336,7 +337,7 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   scrollView: {
     flex: 1,
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   form: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderRadius: 12,
     padding: 20,
   },
@@ -355,16 +356,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   genderContainer: {
     flexDirection: 'row',
@@ -374,28 +375,28 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   genderOptionSelected: {
-    backgroundColor: '#2196F3',
-    borderColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.primary.electricBlue,
   },
   genderOptionText: {
     fontSize: 14,
-    color: '#333',
+    color: theme.colors.text.richBlack,
     fontWeight: '500',
   },
   genderOptionTextSelected: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
   },
   statsContainer: {
     marginTop: 20,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: theme.colors.light.border,
   },
   statsRow: {
     flexDirection: 'row',
@@ -407,12 +408,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   buttonContainer: {
     padding: 16,
@@ -423,27 +424,27 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   saveButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.text.lightGray,
   },
   saveButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
   deleteButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -462,22 +463,22 @@ const styles = StyleSheet.create({
   changePhotoButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     borderRadius: 6,
   },
   changePhotoButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
     fontSize: 14,
   },
   removePhotoButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     borderRadius: 6,
   },
   removePhotoButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -495,22 +496,22 @@ const styles = StyleSheet.create({
   changePhotoButtonTablet: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     borderRadius: 8,
   },
   changePhotoButtonTextTablet: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
     fontSize: 16,
   },
   removePhotoButtonTablet: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     borderRadius: 8,
   },
   removePhotoButtonTextTablet: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -522,28 +523,28 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   genderOptionSelectedTablet: {
-    backgroundColor: '#2196F3',
-    borderColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.primary.electricBlue,
   },
   genderOptionTextTablet: {
     fontSize: 16,
-    color: '#333',
+    color: theme.colors.text.richBlack,
     fontWeight: '500',
   },
   genderOptionTextSelectedTablet: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
   },
   statsContainerTablet: {
     marginTop: 24,
     paddingTop: 24,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: theme.colors.light.border,
   },
   statsRowTablet: {
     flexDirection: 'row',
@@ -555,15 +556,15 @@ const styles = StyleSheet.create({
   statValueTablet: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 6,
   },
   statLabelTablet: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   formTablet: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderRadius: 12,
     padding: 32,
     maxWidth: 600,
@@ -576,36 +577,36 @@ const styles = StyleSheet.create({
   labelTablet: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 10,
   },
   inputTablet: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     padding: 16,
     fontSize: 18,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   saveButtonTablet: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
     padding: 20,
     borderRadius: 8,
     alignItems: 'center',
   },
   saveButtonTextTablet: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 18,
     fontWeight: 'bold',
   },
   deleteButtonTablet: {
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     padding: 20,
     borderRadius: 8,
     alignItems: 'center',
   },
   deleteButtonTextTablet: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 18,
     fontWeight: 'bold',
   },

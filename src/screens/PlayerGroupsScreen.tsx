@@ -12,6 +12,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, PlayerGroup, SerializedPlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
+import { theme } from '../theme';
 
 type PlayerGroupsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PlayerGroups'>;
 
@@ -118,30 +119,30 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.colors.light.border,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
   },
   addButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: theme.colors.accent.warningOrange,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   groupCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -171,24 +172,24 @@ const styles = StyleSheet.create({
   groupName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 4,
   },
   playerCount: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     marginBottom: 2,
   },
   createdDate: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.mediumGray,
   },
   groupActions: {
     alignItems: 'flex-end',
   },
   editText: {
     fontSize: 14,
-    color: '#2196F3',
+    color: theme.colors.primary.electricBlue,
     fontWeight: '500',
   },
   emptyState: {
@@ -199,12 +200,12 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 40,

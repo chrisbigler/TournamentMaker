@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Tournament, Match, Team } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService from '../services/TournamentService';
+import { theme } from '../theme';
 
 type TournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Tournament'>;
 type TournamentScreenRouteProp = RouteProp<RootStackParamList, 'Tournament'>;
@@ -258,19 +259,19 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   header: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
     padding: 16,
     gap: 12,
   },
   headerCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -289,21 +290,21 @@ const styles = StyleSheet.create({
   tournamentName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 4,
   },
   statusText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   deleteButton: {
-    backgroundColor: '#ff4757',
+    backgroundColor: theme.colors.accent.errorRed,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -313,26 +314,26 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 14,
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: '600',
   },
   winnerContainer: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: theme.colors.background.pureWhite3cd,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ffeaa7',
+    borderColor: theme.colors.accent.warningOrange,
     alignItems: 'center',
   },
   winnerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#856404',
+    color: theme.colors.accent.warningOrange,
     marginBottom: 4,
   },
   winnerName: {
     fontSize: 16,
-    color: '#856404',
+    color: theme.colors.accent.warningOrange,
   },
   bracketContainer: {
     flex: 1,
@@ -344,17 +345,17 @@ const styles = StyleSheet.create({
   roundTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 12,
     textAlign: 'center',
   },
   matchCard: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -363,9 +364,9 @@ const styles = StyleSheet.create({
     shadowRadius: 2.22,
   },
   matchCardComplete: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.background.coolGray,
     borderWidth: 1,
-    borderColor: '#28a745',
+    borderColor: theme.colors.accent.successGreen,
   },
   matchHeader: {
     flexDirection: 'row',
@@ -375,17 +376,17 @@ const styles = StyleSheet.create({
   },
   roundText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     fontWeight: '500',
   },
   completeText: {
     fontSize: 12,
-    color: '#28a745',
+    color: theme.colors.accent.successGreen,
     fontWeight: 'bold',
   },
   byeText: {
     fontSize: 12,
-    color: '#ffc107',
+    color: theme.colors.accent.warningOrange,
     fontWeight: 'bold',
   },
   teamsContainer: {
@@ -397,39 +398,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderRadius: 6,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.background.coolGray,
   },
   winnerRow: {
-    backgroundColor: '#d4edda',
+    backgroundColor: theme.colors.accent.successGreen,
     borderWidth: 1,
-    borderColor: '#c3e6cb',
+    borderColor: theme.colors.accent.successGreen,
   },
   teamName: {
     fontSize: 16,
-    color: '#333',
+    color: theme.colors.text.richBlack,
     flex: 1,
   },
   winnerText: {
     fontWeight: 'bold',
-    color: '#155724',
+    color: theme.colors.accent.successGreen,
   },
   score: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     minWidth: 30,
     textAlign: 'center',
   },
   footer: {
     padding: 16,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: theme.colors.light.border,
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   loadingContainer: {
     flex: 1,
@@ -444,17 +445,17 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   backButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
   },
 });

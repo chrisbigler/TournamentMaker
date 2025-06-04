@@ -137,7 +137,9 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
   const renderGenderLabel = (gender: string) => {
     const isMale = gender.toLowerCase() === 'male';
     const iconName = isMale ? 'human-male' : 'human-female';
-    const iconColor = isMale ? theme.colors.primary.electricBlue : '#E91E63';
+    const iconColor = isMale
+      ? theme.colors.primary.electricBlue
+      : theme.colors.accent.errorRed;
     
     return (
       <View style={styles.genderContainer}>
