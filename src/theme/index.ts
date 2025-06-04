@@ -24,7 +24,7 @@ export const theme = {
     },
     button: {
       primary: {
-        backgroundColor: colors.primary.accentGreen,
+        backgroundColor: colors.primary.electricBlue,
         borderRadius: borderRadius.lg,
         height: dimensions.buttonHeight.md,
         paddingHorizontal: spacing.xl,
@@ -48,7 +48,7 @@ export const theme = {
       outline: {
         backgroundColor: 'transparent',
         borderWidth: 2,
-        borderColor: colors.primary.accentGreen,
+        borderColor: colors.primary.electricBlue,
         borderRadius: borderRadius.lg,
         height: dimensions.buttonHeight.md,
         paddingHorizontal: spacing.xl,

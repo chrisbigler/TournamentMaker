@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   outlined: {
     backgroundColor: 'transparent',
-    borderColor: theme.colors.primary.accentGreen,
+    borderColor: theme.colors.primary.electricBlue,
     borderWidth: 2,
   },
   error: {
