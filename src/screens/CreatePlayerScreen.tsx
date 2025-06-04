@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   SafeAreaView,
   Alert,
@@ -18,7 +17,9 @@ import { RootStackParamList, Gender, Player } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import ImageService from '../services/ImageService';
 import ProfilePicture from '../components/ProfilePicture';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
+import { Button, Card, TextInput as CustomTextInput } from '../components';
 
 type CreatePlayerScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayer'>;
 type CreatePlayerScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayer'>;
@@ -37,6 +38,9 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [gender, setGender] = useState<Gender>(player?.gender || Gender.MALE);
   const [profilePicture, setProfilePicture] = useState<string | undefined>(player?.profilePicture);
   const [saving, setSaving] = useState(false);
+
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -207,7 +211,7 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={isTablet ? styles.contentTablet : styles.content}>
-        <View style={isTablet ? styles.formTablet : styles.form}>
+        <Card padding={isTablet ? "2xl" : "lg"} style={isTablet ? styles.formTablet : styles.form}>
           {/* Profile Picture Section */}
           <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
             <Text style={isTablet ? styles.labelTablet : styles.label}>Profile Picture</Text>
@@ -223,45 +227,45 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
                 />
               </TouchableOpacity>
               <View style={isTablet ? styles.profilePictureActionsTablet : styles.profilePictureActions}>
-                <TouchableOpacity
-                  style={isTablet ? styles.changePhotoButtonTablet : styles.changePhotoButton}
-                  onPress={showImagePicker}>
-                  <Text style={isTablet ? styles.changePhotoButtonTextTablet : styles.changePhotoButtonText}>
-                    {profilePicture ? 'Change Photo' : 'Add Photo'}
-                  </Text>
-                </TouchableOpacity>
+                <Button
+                  title={profilePicture ? 'Change Photo' : 'Add Photo'}
+                  onPress={showImagePicker}
+                  variant="secondary"
+                  size={isTablet ? "md" : "sm"}
+                />
                 {profilePicture && (
-                  <TouchableOpacity
-                    style={isTablet ? styles.removePhotoButtonTablet : styles.removePhotoButton}
-                    onPress={handleRemoveProfilePicture}>
-                    <Text style={isTablet ? styles.removePhotoButtonTextTablet : styles.removePhotoButtonText}>Remove</Text>
-                  </TouchableOpacity>
+                  <Button
+                    title="Remove"
+                    onPress={handleRemoveProfilePicture}
+                    variant="outline"
+                    size={isTablet ? "md" : "sm"}
+                  />
                 )}
               </View>
             </View>
           </View>
 
           <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <Text style={isTablet ? styles.labelTablet : styles.label}>Name *</Text>
-            <TextInput
-              style={isTablet ? styles.inputTablet : styles.input}
+            <CustomTextInput
+              label="Name *"
               value={name}
               onChangeText={setName}
               placeholder="Enter player name"
               autoCapitalize="words"
               autoCorrect={false}
+              containerStyle={isTablet ? styles.inputContainerTablet : undefined}
             />
           </View>
 
           <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <Text style={isTablet ? styles.labelTablet : styles.label}>Nickname (Optional)</Text>
-            <TextInput
-              style={isTablet ? styles.inputTablet : styles.input}
+            <CustomTextInput
+              label="Nickname (Optional)"
               value={nickname}
               onChangeText={setNickname}
               placeholder="Enter nickname"
               autoCapitalize="words"
               autoCorrect={false}
+              containerStyle={isTablet ? styles.inputContainerTablet : undefined}
             />
           </View>
 
@@ -311,308 +315,206 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
               </View>
             </View>
           )}
-        </View>
+        </Card>
       </ScrollView>
 
       <View style={isTablet ? styles.buttonContainerTablet : styles.buttonContainer}>
-        <TouchableOpacity
-          style={[isTablet ? styles.saveButtonTablet : styles.saveButton, saving && styles.saveButtonDisabled]}
+        <Button
+          title={saving ? 'Saving...' : isEditing ? 'Update Player' : 'Add Player'}
           onPress={handleSave}
-          disabled={saving}>
-          <Text style={isTablet ? styles.saveButtonTextTablet : styles.saveButtonText}>
-            {saving ? 'Saving...' : isEditing ? 'Update Player' : 'Add Player'}
-          </Text>
-        </TouchableOpacity>
+          loading={saving}
+          disabled={saving}
+          size={isTablet ? "lg" : "md"}
+        />
 
         {isEditing && (
-          <TouchableOpacity style={isTablet ? styles.deleteButtonTablet : styles.deleteButton} onPress={handleDelete}>
-            <Text style={isTablet ? styles.deleteButtonTextTablet : styles.deleteButtonText}>Delete Player</Text>
-          </TouchableOpacity>
+          <Button
+            title="Delete Player"
+            onPress={handleDelete}
+            variant="outline"
+            size={isTablet ? "lg" : "md"}
+            style={styles.deleteButton}
+            textStyle={styles.deleteButtonText}
+          />
         )}
       </View>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-  },
-  form: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderRadius: 12,
-    padding: 20,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  genderOption: {
-    flex: 1,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  genderOptionSelected: {
-    backgroundColor: theme.colors.primary.electricBlue,
-    borderColor: theme.colors.primary.electricBlue,
-  },
-  genderOptionText: {
-    fontSize: 14,
-    color: theme.colors.text.richBlack,
-    fontWeight: '500',
-  },
-  genderOptionTextSelected: {
-    color: theme.colors.background.pureWhite,
-  },
-  statsContainer: {
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.light.border,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: theme.colors.text.darkGray,
-  },
-  buttonContainer: {
-    padding: 16,
-    gap: 12,
-  },
-  buttonContainerTablet: {
-    padding: 20,
-    gap: 16,
-  },
-  saveButton: {
-    backgroundColor: theme.colors.accent.successGreen,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: theme.colors.text.lightGray,
-  },
-  saveButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    backgroundColor: theme.colors.accent.errorRed,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  profilePictureContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  profilePictureButton: {
-    padding: 8,
-  },
-  profilePictureActions: {
-    flexDirection: 'column',
-    marginLeft: 20,
-    gap: 8,
-  },
-  changePhotoButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: theme.colors.primary.electricBlue,
-    borderRadius: 6,
-  },
-  changePhotoButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  removePhotoButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: theme.colors.accent.errorRed,
-    borderRadius: 6,
-  },
-  removePhotoButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  profilePictureContainerTablet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  profilePictureActionsTablet: {
-    flexDirection: 'row',
-    marginLeft: 24,
-    gap: 12,
-  },
-  changePhotoButtonTablet: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: theme.colors.primary.electricBlue,
-    borderRadius: 8,
-  },
-  changePhotoButtonTextTablet: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  removePhotoButtonTablet: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: theme.colors.accent.errorRed,
-    borderRadius: 8,
-  },
-  removePhotoButtonTextTablet: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  genderContainerTablet: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  genderOptionTablet: {
-    flex: 1,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  genderOptionSelectedTablet: {
-    backgroundColor: theme.colors.primary.electricBlue,
-    borderColor: theme.colors.primary.electricBlue,
-  },
-  genderOptionTextTablet: {
-    fontSize: 16,
-    color: theme.colors.text.richBlack,
-    fontWeight: '500',
-  },
-  genderOptionTextSelectedTablet: {
-    color: theme.colors.background.pureWhite,
-  },
-  statsContainerTablet: {
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.light.border,
-  },
-  statsRowTablet: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItemTablet: {
-    alignItems: 'center',
-  },
-  statValueTablet: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 6,
-  },
-  statLabelTablet: {
-    fontSize: 14,
-    color: theme.colors.text.darkGray,
-  },
-  formTablet: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderRadius: 12,
-    padding: 32,
-    maxWidth: 600,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  inputGroupTablet: {
-    marginBottom: 24,
-  },
-  labelTablet: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 10,
-  },
-  inputTablet: {
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 18,
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  saveButtonTablet: {
-    backgroundColor: theme.colors.accent.successGreen,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonTextTablet: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  deleteButtonTablet: {
-    backgroundColor: theme.colors.accent.errorRed,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButtonTextTablet: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  contentTablet: {
-    padding: 24,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.coolGray,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: theme.spacing.lg,
+    },
+    contentTablet: {
+      padding: theme.spacing.xl,
+      alignItems: 'center',
+    },
+    form: {
+      flex: 1,
+    },
+    formTablet: {
+      maxWidth: 600,
+      width: '100%',
+    },
+    inputGroup: {
+      marginBottom: theme.spacing.xl,
+    },
+    inputGroupTablet: {
+      marginBottom: theme.spacing['2xl'],
+    },
+    inputContainerTablet: {
+      marginBottom: 0,
+    },
+    label: {
+      ...theme.textStyles.label,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.sm,
+    },
+    labelTablet: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.md,
+    },
+    genderContainer: {
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+    },
+    genderContainerTablet: {
+      flexDirection: 'row',
+      gap: theme.spacing.lg,
+    },
+    genderOption: {
+      flex: 1,
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.colors.light.border,
+      borderRadius: theme.borderRadius.md,
+      alignItems: 'center',
+      backgroundColor: theme.colors.background.pureWhite,
+    },
+    genderOptionTablet: {
+      flex: 1,
+      padding: theme.spacing.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.light.border,
+      borderRadius: theme.borderRadius.lg,
+      alignItems: 'center',
+      backgroundColor: theme.colors.background.pureWhite,
+    },
+    genderOptionSelected: {
+      backgroundColor: theme.colors.primary.electricBlue,
+      borderColor: theme.colors.primary.electricBlue,
+    },
+    genderOptionSelectedTablet: {
+      backgroundColor: theme.colors.primary.electricBlue,
+      borderColor: theme.colors.primary.electricBlue,
+    },
+    genderOptionText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.richBlack,
+      fontWeight: '500',
+    },
+    genderOptionTextTablet: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.richBlack,
+      fontWeight: '500',
+    },
+    genderOptionTextSelected: {
+      color: theme.colors.background.pureWhite,
+    },
+    genderOptionTextSelectedTablet: {
+      color: theme.colors.background.pureWhite,
+    },
+    statsContainer: {
+      marginTop: theme.spacing.xl,
+      paddingTop: theme.spacing.xl,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.light.border,
+    },
+    statsContainerTablet: {
+      marginTop: theme.spacing['2xl'],
+      paddingTop: theme.spacing['2xl'],
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.light.border,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    statsRowTablet: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    statItem: {
+      alignItems: 'center',
+    },
+    statItemTablet: {
+      alignItems: 'center',
+    },
+    statValue: {
+      ...theme.textStyles.h3,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.xs,
+    },
+    statValueTablet: {
+      ...theme.textStyles.h2,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.sm,
+    },
+    statLabel: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.darkGray,
+    },
+    statLabelTablet: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.darkGray,
+    },
+    buttonContainer: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+    },
+    buttonContainerTablet: {
+      padding: theme.spacing.xl,
+      gap: theme.spacing.lg,
+    },
+    deleteButton: {
+      borderColor: theme.colors.accent.errorRed,
+    },
+    deleteButtonText: {
+      color: theme.colors.accent.errorRed,
+    },
+    profilePictureContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    profilePictureContainerTablet: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    profilePictureButton: {
+      padding: theme.spacing.sm,
+    },
+    profilePictureActions: {
+      flexDirection: 'column',
+      marginLeft: theme.spacing.xl,
+      gap: theme.spacing.sm,
+    },
+    profilePictureActionsTablet: {
+      flexDirection: 'row',
+      marginLeft: theme.spacing['2xl'],
+      gap: theme.spacing.md,
+    },
+  });
 
 export default CreatePlayerScreen; 
