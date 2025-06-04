@@ -7,7 +7,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 
 interface MenuItemProps {
   title: string;
@@ -26,6 +27,8 @@ const MenuItem: React.FC<MenuItemProps> = ({
   variant = 'primary',
   style,
 }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const menuItemStyle = [
     styles.base,
     styles[variant],
@@ -55,7 +58,8 @@ const MenuItem: React.FC<MenuItemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   base: {
     borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.lg,
@@ -133,6 +137,6 @@ const styles = StyleSheet.create({
   neutralSubtitle: {
     color: theme.colors.text.darkGray,
   },
-});
+  });
 
 export default MenuItem; 

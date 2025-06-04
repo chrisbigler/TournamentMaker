@@ -7,7 +7,8 @@ import {
   TextInputProps,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 
 interface CustomTextInputProps extends TextInputProps {
   label?: string;
@@ -24,6 +25,8 @@ const TextInput: React.FC<CustomTextInputProps> = ({
   style,
   ...props
 }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -42,7 +45,8 @@ const TextInput: React.FC<CustomTextInputProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     marginBottom: theme.spacing.lg,
   },
@@ -72,6 +76,6 @@ const styles = StyleSheet.create({
     color: theme.colors.accent.errorRed,
     marginTop: theme.spacing.xs,
   },
-});
+  });
 
 export default TextInput; 
