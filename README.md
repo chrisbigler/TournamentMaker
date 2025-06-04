@@ -1,6 +1,7 @@
 # Tournament Maker
 
 A React Native mobile app for managing camping group tournaments with team-based competitions.
+The interface now features a ChatGPT-inspired dark theme with green accents.
 
 ## Features
 

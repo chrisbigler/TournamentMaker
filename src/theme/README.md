@@ -1,38 +1,32 @@
-# Solarium Theme System
+# ChatGPT Theme System
 
-This theme system implements a solarium-inspired design that captures the essence of natural light, warmth, and botanical elements typically found in sunrooms and solariums.
+This theme system implements a ChatGPT‑inspired aesthetic with deep grays and a vibrant green accent.
 
 ## Design Principles
 
-1. **Natural Light**: Uses warm whites and soft yellows to mimic natural sunlight
-2. **Botanical Elements**: Incorporates greens and earth tones for a garden-like feel
-3. **Transparency**: Uses subtle opacity variations to suggest glass and openness
-4. **Warmth**: Favors warm tones over cool ones to create an inviting atmosphere
-5. **High Contrast**: Ensures accessibility with proper contrast ratios
+1. **Dark Mode First**: Rich gray backgrounds for a modern look
+2. **Vibrant Accent**: ChatGPT green for primary actions
+3. **Minimalist**: Clean surfaces with subtle shadows
+4. **Accessibility**: High contrast ratios for readability
+5. **Consistency**: Unified palette across components
 
 ## Color Palette
 
 ### Primary Colors
-- **Sunbeam Gold** (`#F7C548`) - Primary actions, highlights
-- **Glass Green** (`#7FB069`) - Secondary actions, success states
-- **Sky Blue** (`#87CEEB`) - Links, interactive elements
+- **ChatGPT Green** (`#10A37F`) - Primary actions
+- **Deep Gray** (`#343541`) - Main background
+- **Card Gray** (`#444654`) - Card surfaces
 
 ### Neutral Colors
-- **Warm White** (`#FDFBF7`) - Backgrounds, cards
-- **Soft Gray** (`#E8E5E0`) - Borders, dividers
-- **Stone Gray** (`#9B9B93`) - Secondary text
-- **Charcoal** (`#3A3A37`) - Primary text
+- **Off White** (`#ECECF1`) - Text and icons
+- **Border Gray** (`#E5E5E5`) - Dividers
+- **Dark Slate** (`#202123`) - Headers
 
 ### Accent Colors
-- **Terracotta** (`#D17B47`) - Warnings, attention
-- **Lavender Mist** (`#E6E0F3`) - Subtle highlights
-- **Sage** (`#A8C09A`) - Alternative success
-
-### Semantic Colors
-- **Success Green** (`#52B788`) - Success messages
-- **Warning Amber** (`#F4A261`) - Warning states
-- **Error Coral** (`#E76F51`) - Error messages
-- **Info Blue** (`#6FAADB`) - Information alerts
+- **Success Green** (`#10A37F`) - Success states
+- **Warning Orange** (`#F59E0B`) - Warnings
+- **Error Red** (`#EF4444`) - Errors
+- **Info Blue** (`#0EA5E9`) - Information
 
 ## Components
 
