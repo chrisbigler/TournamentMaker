@@ -45,7 +45,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         
         {/* Hero Header with Gradient */}
         <LinearGradient
-          colors={['#0F172A', '#1E293B', '#334155']}
+          colors={['#202123', '#343541', '#444654']}
           style={styles.heroSection}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}>

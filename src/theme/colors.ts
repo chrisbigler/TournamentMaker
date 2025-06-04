@@ -1,24 +1,24 @@
 export const colors = {
-  // Core Brand Colors (New Professional Scheme)
+  // Core Brand Colors (ChatGPT Aesthetic)
   primary: {
-    deepNavy: '#0F172A',        // Primary brand, headers
-    electricBlue: '#3B82F6',    // Primary actions, CTAs
-    slateGray: '#475569',       // Secondary elements
+    deepNavy: '#202123',        // Primary brand, headers
+    electricBlue: '#10A37F',    // Primary actions, CTAs
+    slateGray: '#40414F',       // Secondary elements
   },
   
   // Background Colors
   background: {
-    pureWhite: '#FFFFFF',       // Main background
-    coolGray: '#F8FAFC',        // Card backgrounds
-    lightGray: '#F1F5F9',       // Section dividers
+    pureWhite: '#343541',       // Main background
+    coolGray: '#444654',        // Card backgrounds
+    lightGray: '#202123',       // Section dividers
   },
   
   // Text Colors
   text: {
-    richBlack: '#0F172A',       // Primary text
-    darkGray: '#334155',        // Secondary text
-    mediumGray: '#64748B',      // Placeholder text
-    lightGray: '#94A3B8',       // Disabled text
+    richBlack: '#ECECF1',       // Primary text
+    darkGray: '#C5C5D2',        // Secondary text
+    mediumGray: '#8E8EA0',      // Placeholder text
+    lightGray: '#6B6B7B',       // Disabled text
     white: '#FFFFFF',           // White text for dark backgrounds
   },
   
@@ -41,49 +41,49 @@ export const colors = {
     charcoal: '#3A3A37',
   },
   
-  // Light mode theme (Updated to professional scheme)
+  // Light mode theme (ChatGPT style)
   light: {
     background: '#FFFFFF',
     surface: '#FFFFFF',
-    card: '#F8FAFC',
+    card: '#F7F7F8',
     text: {
-      primary: '#0F172A',
-      secondary: '#334155',
-      tertiary: '#64748B',
-      disabled: '#94A3B8',
+      primary: '#202123',
+      secondary: '#40414F',
+      tertiary: '#6B6B7B',
+      disabled: '#8E8EA0',
       inverse: '#FFFFFF',
     },
-    border: '#F1F5F9',
-    notification: '#3B82F6',
-    primary: '#3B82F6',
-    secondary: '#475569',
+    border: '#E5E5E5',
+    notification: '#10A37F',
+    primary: '#10A37F',
+    secondary: '#40414F',
   },
   
-  // Dark mode theme (Updated for consistency)
+  // Dark mode theme (ChatGPT style)
   dark: {
-    background: '#0F172A',
-    surface: '#1E293B',
-    card: '#334155',
+    background: '#343541',
+    surface: '#202123',
+    card: '#444654',
     text: {
-      primary: '#FFFFFF',
-      secondary: '#CBD5E1',
-      tertiary: '#94A3B8',
-      disabled: '#64748B',
-      inverse: '#0F172A',
+      primary: '#ECECF1',
+      secondary: '#C5C5D2',
+      tertiary: '#8E8EA0',
+      disabled: '#6B6B7B',
+      inverse: '#202123',
     },
-    border: '#475569',
-    notification: '#3B82F6',
-    primary: '#3B82F6',
-    secondary: '#CBD5E1',
+    border: '#40414F',
+    notification: '#10A37F',
+    primary: '#10A37F',
+    secondary: '#C5C5D2',
   },
 } as const;
 
 export const gradients = {
-  // Updated gradients for professional look
-  primaryBlue: ['#3B82F6', '#2563EB'],
-  navy: ['#0F172A', '#1E293B'],
-  navyGradient: ['#0F172A', '#1E293B', '#334155'], // Beautiful navy fade down gradient
-  coolGray: ['#F8FAFC', '#F1F5F9'],
+  // Updated gradients for ChatGPT look
+  primaryBlue: ['#10A37F', '#0E8F6E'],
+  navy: ['#202123', '#343541'],
+  navyGradient: ['#202123', '#343541', '#444654'], // Deep gray gradient
+  coolGray: ['#343541', '#444654'],
   
   // Legacy gradients (for backward compatibility)
   sunbeam: ['#F7C548', '#E6B439'],
