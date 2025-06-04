@@ -13,6 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Tournament, TournamentStatus } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import { MaterialIcons } from '@expo/vector-icons';
+import { theme } from '../theme';
 
 type TournamentHistoryNavigationProp = StackNavigationProp<RootStackParamList, 'TournamentHistory'>;
 
@@ -50,13 +51,13 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   const getStatusColor = (status: TournamentStatus): string => {
     switch (status) {
       case TournamentStatus.COMPLETED:
-        return '#4CAF50';
+        return theme.colors.accent.successGreen';
       case TournamentStatus.ACTIVE:
-        return '#2196F3';
+        return theme.colors.primary.electricBlue';
       case TournamentStatus.SETUP:
-        return '#FF9800';
+        return theme.colors.accent.warningOrange';
       default:
-        return '#757575';
+        return theme.colors.text.darkGray';
     }
   };
 
@@ -152,16 +153,16 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       
       <View style={styles.tournamentDetails}>
         <View style={styles.detailItem}>
-          <MaterialIcons name="groups" size={16} color="#666" />
+          <MaterialIcons name="groups" size={16} color="theme.colors.text.darkGray" />
           <Text style={styles.detailText}>Teams: {item.teams.length}</Text>
         </View>
         <View style={styles.detailItem}>
-          <MaterialIcons name="timer" size={16} color="#666" />
+          <MaterialIcons name="timer" size={16} color="theme.colors.text.darkGray" />
           <Text style={styles.detailText}>Round: {item.currentRound}</Text>
         </View>
         {item.winner && (
           <View style={styles.detailItem}>
-            <MaterialIcons name="emoji-events" size={16} color="#4CAF50" />
+            <MaterialIcons name="emoji-events" size={16} color="theme.colors.accent.successGreen" />
             <Text style={styles.winnerText}>Winner: {item.winner.teamName}</Text>
           </View>
         )}
@@ -173,7 +174,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MaterialIcons name="history" size={64} color="#ccc" style={styles.emptyIcon} />
+      <MaterialIcons name="history" size={64} color="theme.colors.text.mediumGray" style={styles.emptyIcon} />
       <Text style={styles.emptyStateTitle}>No Tournament History</Text>
       <Text style={styles.emptyStateText}>
         Create your first tournament to see it appear here!
@@ -181,7 +182,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity
         style={styles.createButton}
         onPress={() => navigation.navigate('CreateTournament')}>
-        <MaterialIcons name="add" size={20} color="#fff" style={styles.buttonIcon} />
+        <MaterialIcons name="add" size={20} color="theme.colors.background.pureWhite" style={styles.buttonIcon} />
         <Text style={styles.createButtonText}>Create Tournament</Text>
       </TouchableOpacity>
     </View>
@@ -213,7 +214,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.devButton}
         onPress={clearAllTournaments}
         activeOpacity={0.8}>
-        <MaterialIcons name="delete" size={24} color="#fff" />
+        <MaterialIcons name="delete" size={24} color="theme.colors.background.pureWhite" />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -222,7 +223,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   loadingContainer: {
     flex: 1,
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   listContainer: {
     padding: 16,
@@ -242,12 +243,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   tournamentItem: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   tournamentName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     flex: 1,
   },
   statusContainer: {
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -297,18 +298,18 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     marginLeft: 4,
   },
   winnerText: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
     fontWeight: 'bold',
     marginLeft: 4,
   },
   dateText: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.mediumGray,
   },
   emptyState: {
     alignItems: 'center',
@@ -320,17 +321,17 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     textAlign: 'center',
     marginBottom: 24,
   },
   createButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   createButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -349,14 +350,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     width: 56,
     height: 56,
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.text.richBlack,
     shadowOffset: {
       width: 0,
       height: 4,

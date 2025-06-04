@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Player, Gender, PlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService, { TeamCreationMode } from '../services/TournamentService';
+import { theme } from '../theme';
 
 type CreateTournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateTournament'>;
 
@@ -339,13 +340,13 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   scrollView: {
     flex: 1,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -353,30 +354,30 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   modeOption: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   modeOptionSelected: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#2196F3',
+    backgroundColor: theme.colors.background.coolGray,
+    borderColor: theme.colors.primary.electricBlue,
   },
   modeInfo: {
     flex: 1,
@@ -384,25 +385,25 @@ const styles = StyleSheet.create({
   modeTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 4,
   },
   modeTitleSelected: {
-    color: '#2196F3',
+    color: theme.colors.primary.electricBlue,
   },
   modeDescription: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   modeDescriptionSelected: {
-    color: '#1976D2',
+    color: theme.colors.primary.deepNavy,
   },
   radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -410,21 +411,21 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
   },
   playerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   playerCardSelected: {
-    backgroundColor: '#e8f5e8',
-    borderColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
+    borderColor: theme.colors.accent.successGreen,
   },
   playerInfo: {
     flex: 1,
@@ -432,28 +433,28 @@ const styles = StyleSheet.create({
   playerName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 2,
   },
   playerNameSelected: {
-    color: '#2E7D32',
+    color: theme.colors.accent.successGreen,
   },
   playerNickname: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     fontStyle: 'italic',
     marginBottom: 2,
   },
   playerNicknameSelected: {
-    color: '#388E3C',
+    color: theme.colors.accent.successGreen,
   },
   playerGender: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.mediumGray,
     textTransform: 'capitalize',
   },
   playerGenderSelected: {
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
   },
   selectionIndicator: {
     width: 24,
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 18,
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
     fontWeight: 'bold',
   },
   emptyState: {
@@ -472,34 +473,34 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     textAlign: 'center',
     marginBottom: 16,
   },
   addPlayersButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addPlayersButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
   },
   buttonContainer: {
     padding: 16,
   },
   createButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   createButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.text.lightGray,
   },
   createButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -517,21 +518,21 @@ const styles = StyleSheet.create({
   sectionTitleInContainer: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
   },
   groupCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   groupCardSelected: {
-    backgroundColor: '#e8f5e8',
-    borderColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
+    borderColor: theme.colors.accent.successGreen,
   },
   groupInfo: {
     flex: 1,
@@ -539,26 +540,26 @@ const styles = StyleSheet.create({
   groupName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 2,
   },
   groupNameSelected: {
-    color: '#2E7D32',
+    color: theme.colors.accent.successGreen,
   },
   groupPlayerCount: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
   },
   groupPlayerCountSelected: {
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
   },
   clearGroupButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     padding: 8,
     borderRadius: 8,
   },
   clearGroupButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
   },
 });

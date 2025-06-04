@@ -14,6 +14,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, PlayerGroup, Player, SerializedPlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
+import { theme } from '../theme';
 
 type CreatePlayerGroupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayerGroup'>;
 type CreatePlayerGroupScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayerGroup'>;
@@ -244,13 +245,13 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.background.coolGray,
   },
   scrollView: {
     flex: 1,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -258,30 +259,30 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   playerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: theme.colors.light.border,
     borderRadius: 8,
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background.pureWhite,
   },
   playerCardSelected: {
-    backgroundColor: '#e8f5e8',
-    borderColor: '#4CAF50',
+    backgroundColor: theme.colors.accent.successGreen,
+    borderColor: theme.colors.accent.successGreen,
   },
   playerInfo: {
     flex: 1,
@@ -289,28 +290,28 @@ const styles = StyleSheet.create({
   playerName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.text.richBlack,
     marginBottom: 2,
   },
   playerNameSelected: {
-    color: '#2E7D32',
+    color: theme.colors.accent.successGreen,
   },
   playerNickname: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     fontStyle: 'italic',
     marginBottom: 2,
   },
   playerNicknameSelected: {
-    color: '#388E3C',
+    color: theme.colors.accent.successGreen,
   },
   playerGender: {
     fontSize: 12,
-    color: '#999',
+    color: theme.colors.text.mediumGray,
     textTransform: 'capitalize',
   },
   playerGenderSelected: {
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
   },
   selectionIndicator: {
     width: 24,
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 18,
-    color: '#4CAF50',
+    color: theme.colors.accent.successGreen,
     fontWeight: 'bold',
   },
   emptyState: {
@@ -329,18 +330,18 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.text.darkGray,
     textAlign: 'center',
     marginBottom: 16,
   },
   addPlayersButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: theme.colors.primary.electricBlue,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addPlayersButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontWeight: 'bold',
   },
   buttonContainer: {
@@ -348,27 +349,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   saveButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: theme.colors.accent.warningOrange,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   saveButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.text.lightGray,
   },
   saveButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
   deleteButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: theme.colors.accent.errorRed,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#fff',
+    color: theme.colors.background.pureWhite,
     fontSize: 16,
     fontWeight: 'bold',
   },
