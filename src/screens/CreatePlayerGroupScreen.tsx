@@ -14,7 +14,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, PlayerGroup, Player, SerializedPlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
+import { Button, Card, TextInput as CustomTextInput } from '../components';
 
 type CreatePlayerGroupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayerGroup'>;
 type CreatePlayerGroupScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayerGroup'>;
@@ -40,6 +42,9 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
   const [selectedPlayers, setSelectedPlayers] = useState<Player[]>(initialPlayers);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -176,7 +181,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text>Loading players...</Text>
+          <Text style={styles.loadingText}>Loading players...</Text>
         </View>
       </SafeAreaView>
     );
@@ -185,18 +190,17 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <View style={styles.section}>
+        <Card padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>Group Name</Text>
-          <TextInput
-            style={styles.input}
+          <CustomTextInput
             value={groupName}
             onChangeText={setGroupName}
             placeholder="Enter group name"
             autoCapitalize="words"
           />
-        </View>
+        </Card>
 
-        <View style={styles.section}>
+        <Card padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>
             Select Players ({selectedPlayers.length} selected)
           </Text>
@@ -205,11 +209,12 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
               <Text style={styles.emptyStateText}>
                 No players available. Add some players first.
               </Text>
-              <TouchableOpacity
-                style={styles.addPlayersButton}
-                onPress={() => navigation.navigate('Players')}>
-                <Text style={styles.addPlayersButtonText}>Manage Players</Text>
-              </TouchableOpacity>
+              <Button
+                title="Manage Players"
+                onPress={() => navigation.navigate('Players')}
+                variant="secondary"
+                size="sm"
+              />
             </View>
           ) : (
             <FlatList
@@ -219,165 +224,130 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
               scrollEnabled={false}
             />
           )}
-        </View>
+        </Card>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+        <Button
+          title={saving ? 'Saving...' : isEditing ? 'Update Group' : 'Create Group'}
           onPress={handleSave}
-          disabled={saving}>
-          <Text style={styles.saveButtonText}>
-            {saving ? 'Saving...' : isEditing ? 'Update Group' : 'Create Group'}
-          </Text>
-        </TouchableOpacity>
+          loading={saving}
+          disabled={saving}
+        />
 
         {isEditing && (
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteButtonText}>Delete Group</Text>
-          </TouchableOpacity>
+          <Button
+            title="Delete Group"
+            onPress={handleDelete}
+            variant="outline"
+            style={styles.deleteButton}
+            textStyle={styles.deleteButtonText}
+          />
         )}
       </View>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  section: {
-    backgroundColor: theme.colors.background.pureWhite,
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  playerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: theme.colors.background.pureWhite,
-  },
-  playerCardSelected: {
-    backgroundColor: theme.colors.accent.successGreen,
-    borderColor: theme.colors.accent.successGreen,
-  },
-  playerInfo: {
-    flex: 1,
-  },
-  playerName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 2,
-  },
-  playerNameSelected: {
-    color: theme.colors.accent.successGreen,
-  },
-  playerNickname: {
-    fontSize: 14,
-    color: theme.colors.text.darkGray,
-    fontStyle: 'italic',
-    marginBottom: 2,
-  },
-  playerNicknameSelected: {
-    color: theme.colors.accent.successGreen,
-  },
-  playerGender: {
-    fontSize: 12,
-    color: theme.colors.text.mediumGray,
-    textTransform: 'capitalize',
-  },
-  playerGenderSelected: {
-    color: theme.colors.accent.successGreen,
-  },
-  selectionIndicator: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkmark: {
-    fontSize: 18,
-    color: theme.colors.accent.successGreen,
-    fontWeight: 'bold',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: theme.colors.text.darkGray,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  addPlayersButton: {
-    backgroundColor: theme.colors.primary.electricBlue,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addPlayersButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-  },
-  buttonContainer: {
-    padding: 16,
-    gap: 12,
-  },
-  saveButton: {
-    backgroundColor: theme.colors.accent.warningOrange,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: theme.colors.text.lightGray,
-  },
-  saveButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    backgroundColor: theme.colors.accent.errorRed,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.coolGray,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    section: {
+      margin: theme.spacing.lg,
+    },
+    sectionTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.md,
+    },
+    playerCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.colors.light.border,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.sm,
+      backgroundColor: theme.colors.background.pureWhite,
+    },
+    playerCardSelected: {
+      backgroundColor: theme.colors.accent.successGreen,
+      borderColor: theme.colors.accent.successGreen,
+    },
+    playerInfo: {
+      flex: 1,
+    },
+    playerName: {
+      ...theme.textStyles.label,
+      color: theme.colors.text.richBlack,
+      marginBottom: 2,
+    },
+    playerNameSelected: {
+      color: theme.colors.accent.successGreen,
+    },
+    playerNickname: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.darkGray,
+      fontStyle: 'italic',
+      marginBottom: 2,
+    },
+    playerNicknameSelected: {
+      color: theme.colors.accent.successGreen,
+    },
+    playerGender: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.mediumGray,
+      textTransform: 'capitalize',
+    },
+    playerGenderSelected: {
+      color: theme.colors.accent.successGreen,
+    },
+    selectionIndicator: {
+      width: 24,
+      height: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkmark: {
+      ...theme.textStyles.body,
+      color: theme.colors.accent.successGreen,
+      fontWeight: 'bold',
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: theme.spacing.xl,
+    },
+    emptyStateText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.darkGray,
+      textAlign: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    buttonContainer: {
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
+    },
+    deleteButton: {
+      borderColor: theme.colors.accent.errorRed,
+    },
+    deleteButtonText: {
+      color: theme.colors.accent.errorRed,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.darkGray,
+    },
+  });
 
 export default CreatePlayerGroupScreen; 
