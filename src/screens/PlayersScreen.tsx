@@ -15,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Player } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService from '../services/TournamentService';
-import { useTheme } from '../theme';
+import { colors, useTheme } from '../theme';
 import type { Theme } from '../theme';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -141,8 +141,8 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     const isMale = gender.toLowerCase() === 'male';
     const iconName = isMale ? 'human-male' : 'human-female';
     const iconColor = isMale
-      ? theme.colors.primary.electricBlue
-      : theme.colors.accent.errorRed;
+      ? '#4082c9' // Blue for male
+      : '#D865A3'; // Slightly dark pink for female
     
     return (
       <View style={styles.genderContainer}>

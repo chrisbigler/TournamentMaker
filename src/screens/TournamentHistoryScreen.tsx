@@ -55,7 +55,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       case TournamentStatus.COMPLETED:
         return theme.colors.accent.successGreen;
       case TournamentStatus.ACTIVE:
-        return theme.colors.primary.electricBlue;
+        return theme.colors.accent.infoBlue;
       case TournamentStatus.SETUP:
         return theme.colors.accent.warningOrange;
       default:
@@ -134,20 +134,15 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderTournamentItem = ({ item }: { item: Tournament }) => {
-    const cardStyle = {
-      ...styles.tournamentItem,
-      borderLeftWidth: 4,
-      borderLeftColor: getStatusColor(item.status),
-    };
-    
     return (
       <TouchableOpacity
         onPress={() => handleTournamentPress(item)}
         activeOpacity={0.7}>
         <Card 
           variant="outlined" 
-          style={cardStyle}
+          style={styles.tournamentItem}
         >
+          {/* Header Section */}
           <View style={styles.tournamentHeader}>
             <Text style={[styles.tournamentName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
             <View style={styles.statusContainer}>
@@ -163,24 +158,31 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           </View>
           
-          <View style={styles.tournamentDetails}>
-            <View style={styles.detailItem}>
-              <MaterialIcons name="groups" size={16} color={theme.colors.accent.infoBlue} />
-              <Text style={[styles.detailText, { color: theme.colors.accent.infoBlue }]}>Teams: {item.teams.length}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <MaterialIcons name="timer" size={16} color={theme.colors.accent.infoBlue} />
-              <Text style={[styles.detailText, { color: theme.colors.accent.infoBlue }]}>Round: {item.currentRound}</Text>
-            </View>
-            {item.winner && (
-              <View style={styles.detailItem}>
-                <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
-                <Text style={[styles.winnerText, { color: theme.colors.accent.successGreen }]}>Winner: {item.winner.teamName}</Text>
-              </View>
-            )}
+          {/* Date Section */}
+          <View style={styles.dateSection}>
+            <Text style={[styles.dateText, { color: theme.colors.text.mediumGray }]}>{formatDate(item.createdAt)}</Text>
           </View>
           
-          <Text style={[styles.dateText, { color: theme.colors.text.mediumGray }]}>{formatDate(item.createdAt)}</Text>
+          {/* Tournament Info Section */}
+          <View style={styles.tournamentInfo}>
+            {item.winner && (
+              <View style={styles.winnerRow}>
+                <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.warningOrange} />
+                <Text style={[styles.winnerText, { color: theme.colors.accent.warningOrange }]}>Winner: {item.winner.teamName}</Text>
+              </View>
+            )}
+            
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <MaterialIcons name="groups" size={16} color={theme.colors.text.lightGray} />
+                <Text style={[styles.statText, { color: theme.colors.text.lightGray }]}>Teams: {item.teams.length}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <MaterialIcons name="timer" size={16} color={theme.colors.text.lightGray} />
+                <Text style={[styles.statText, { color: theme.colors.text.lightGray }]}>Round: {item.currentRound}</Text>
+              </View>
+            </View>
+          </View>
         </Card>
       </TouchableOpacity>
     );
@@ -255,57 +257,71 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   tournamentItem: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tournamentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   tournamentName: {
     fontSize: 18,
     fontWeight: 'bold',
     flex: 1,
+    lineHeight: 24,
+    marginRight: 12,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusIcon: {
-    marginRight: 4,
+    marginRight: 6,
   },
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
-  tournamentDetails: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 8,
+  dateSection: {
+    marginBottom: 12,
   },
-  detailItem: {
+  dateText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  tournamentInfo: {
+    gap: 8,
+  },
+  winnerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 4,
-  },
-  detailText: {
-    fontSize: 14,
-    marginLeft: 4,
+    marginBottom: 8,
   },
   winnerText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    marginLeft: 4,
+    fontWeight: '600',
+    marginLeft: 6,
+    lineHeight: 20,
   },
-  dateText: {
-    fontSize: 12,
+  statsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statText: {
+    fontSize: 14,
+    marginLeft: 6,
+    lineHeight: 20,
   },
   emptyState: {
     alignItems: 'center',

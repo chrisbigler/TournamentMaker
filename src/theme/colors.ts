@@ -2,7 +2,7 @@ export const colors = {
   // Core Brand Colors (ChatGPT Aesthetic)
   primary: {
     deepNavy: '#202123',        // Primary brand, headers
-    electricBlue: '#10A37F',    // Primary actions, CTAs
+    electricBlue: '#4082c9',    // Primary actions, CTAs
     slateGray: '#40414F',       // Secondary elements
   },
   
