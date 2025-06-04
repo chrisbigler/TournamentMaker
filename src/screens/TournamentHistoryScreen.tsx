@@ -51,13 +51,13 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   const getStatusColor = (status: TournamentStatus): string => {
     switch (status) {
       case TournamentStatus.COMPLETED:
-        return theme.colors.accent.successGreen';
+        return theme.colors.accent.successGreen;
       case TournamentStatus.ACTIVE:
-        return theme.colors.primary.electricBlue';
+        return theme.colors.primary.electricBlue;
       case TournamentStatus.SETUP:
-        return theme.colors.accent.warningOrange';
+        return theme.colors.accent.warningOrange;
       default:
-        return theme.colors.text.darkGray';
+        return theme.colors.text.darkGray;
     }
   };
 
@@ -153,16 +153,16 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       
       <View style={styles.tournamentDetails}>
         <View style={styles.detailItem}>
-          <MaterialIcons name="groups" size={16} color="theme.colors.text.darkGray" />
+          <MaterialIcons name="groups" size={16} color={theme.colors.text.darkGray} />
           <Text style={styles.detailText}>Teams: {item.teams.length}</Text>
         </View>
         <View style={styles.detailItem}>
-          <MaterialIcons name="timer" size={16} color="theme.colors.text.darkGray" />
+          <MaterialIcons name="timer" size={16} color={theme.colors.text.darkGray} />
           <Text style={styles.detailText}>Round: {item.currentRound}</Text>
         </View>
         {item.winner && (
           <View style={styles.detailItem}>
-            <MaterialIcons name="emoji-events" size={16} color="theme.colors.accent.successGreen" />
+            <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
             <Text style={styles.winnerText}>Winner: {item.winner.teamName}</Text>
           </View>
         )}
@@ -174,7 +174,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MaterialIcons name="history" size={64} color="theme.colors.text.mediumGray" style={styles.emptyIcon} />
+      <MaterialIcons name="history" size={64} color={theme.colors.text.mediumGray} style={styles.emptyIcon} />
       <Text style={styles.emptyStateTitle}>No Tournament History</Text>
       <Text style={styles.emptyStateText}>
         Create your first tournament to see it appear here!
@@ -182,7 +182,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity
         style={styles.createButton}
         onPress={() => navigation.navigate('CreateTournament')}>
-        <MaterialIcons name="add" size={20} color="theme.colors.background.pureWhite" style={styles.buttonIcon} />
+        <MaterialIcons name="add" size={20} color={theme.colors.background.pureWhite} style={styles.buttonIcon} />
         <Text style={styles.createButtonText}>Create Tournament</Text>
       </TouchableOpacity>
     </View>
@@ -214,7 +214,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.devButton}
         onPress={clearAllTournaments}
         activeOpacity={0.8}>
-        <MaterialIcons name="delete" size={24} color="theme.colors.background.pureWhite" />
+        <MaterialIcons name="delete" size={24} color={theme.colors.background.pureWhite} />
       </TouchableOpacity>
     </SafeAreaView>
   );
