@@ -137,7 +137,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               <MaterialIcons 
                 name="lightbulb" 
                 size={24} 
-                color={theme.colors.primary.accentGreen} 
+                color={theme.colors.primary.electricBlue} 
               />
             </View>
             <View style={styles.tipContent}>
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   quickCreateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary.accentGreen,
+    backgroundColor: theme.colors.primary.electricBlue,
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing['2xl'],
     borderRadius: theme.borderRadius.xl,

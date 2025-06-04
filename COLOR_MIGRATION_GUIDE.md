@@ -7,7 +7,7 @@ This guide documents the migration from the original colorful theme to the new p
 ### Primary Colors
 | Old | New | Usage |
 |-----|-----|-------|
-| `sunbeamGold` (#F7C548) | `accentGreen` (#10A37F) | Primary actions, CTAs |
+| `sunbeamGold` (#F7C548) | `electricBlue` (#3B82F6) | Primary actions, CTAs |
 | `glassGreen` (#7FB069) | `deepNavy` (#0F172A) | Headers, primary brand |
 | `skyBlue` (#87CEEB) | `slateGray` (#475569) | Secondary elements |
 
@@ -83,7 +83,7 @@ For remaining screens, use these patterns:
 ### Color References
 ```typescript
 // Old → New
-theme.colors.primary.sunbeamGold → theme.colors.primary.accentGreen
+theme.colors.primary.sunbeamGold → theme.colors.primary.electricBlue
 theme.colors.primary.glassGreen → theme.colors.primary.deepNavy
 theme.colors.primary.skyBlue → theme.colors.primary.slateGray
 theme.colors.light.background → theme.colors.background.pureWhite

@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.primary.accentGreen,
+    borderColor: theme.colors.primary.electricBlue,
     elevation: 2,
   },
   scoreDisplayTablet: {
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     ...theme.textStyles.h1,
-    color: theme.colors.primary.accentGreen,
+    color: theme.colors.primary.electricBlue,
     fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: theme.textStyles.h1.fontSize * 1.1,
