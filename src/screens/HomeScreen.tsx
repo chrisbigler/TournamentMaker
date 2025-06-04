@@ -8,7 +8,6 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import DatabaseService from '../services/DatabaseService';
@@ -46,27 +45,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
         
-        {/* Hero Header with Gradient */}
-        <LinearGradient
-          colors={theme.gradients.navyGradient}
-          style={styles.heroSection}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}>
-          <View style={styles.headerContent}>
-            <View style={styles.logoContainer}>
-              <MaterialIcons 
-                name="emoji-events" 
-                size={64} 
-                color={theme.colors.text.white} 
-              />
-            </View>
-            <Text style={styles.title}>Tournament Maker</Text>
-            <Text style={styles.subtitle}>
-              Create and manage camping group tournaments with ease
-            </Text>
-          </View>
-          
-          {/* Quick Create Tournament Button */}
+        {/* Quick Create Tournament Button */}
+        <View style={styles.quickCreateSection}>
           <TouchableOpacity
             style={styles.quickCreateButton}
             onPress={() => navigation.navigate('CreateTournament')}
@@ -80,7 +60,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             />
             <Text style={styles.quickCreateText}>Create Tournament</Text>
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
 
         {/* Welcome Message */}
         <View style={styles.welcomeSection}>
@@ -169,34 +149,15 @@ const createStyles = (theme: Theme) =>
     flexGrow: 1,
     paddingBottom: 100, // Increased padding for bottom navigation clearance
   },
-  heroSection: {
-    paddingTop: theme.spacing['3xl'],
-    paddingBottom: theme.spacing['4xl'],
+  quickCreateSection: {
     paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing['2xl'],
     alignItems: 'center',
-    ...theme.shadows.elevated,
-  },
-  headerContent: {
-    alignItems: 'center',
-    marginBottom: theme.spacing['2xl'],
-  },
-  logoContainer: {
-    marginBottom: theme.spacing.lg,
-  },
-  title: {
-    ...theme.textStyles.h1,
-    color: theme.colors.text.white,
-    marginBottom: theme.spacing.md,
-    textAlign: 'center',
-    fontSize: 32,
-  },
-  subtitle: {
-    ...theme.textStyles.bodyLarge,
-    color: theme.colors.text.white,
-    textAlign: 'center',
-    opacity: 0.9,
-    lineHeight: 24,
-    paddingHorizontal: theme.spacing.lg,
+    backgroundColor: theme.colors.background.pureWhite,
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.lg,
+    borderRadius: theme.borderRadius.xl,
+    ...theme.shadows.card,
   },
   quickCreateButton: {
     flexDirection: 'row',
@@ -218,7 +179,7 @@ const createStyles = (theme: Theme) =>
     paddingVertical: theme.spacing['2xl'],
     backgroundColor: theme.colors.background.pureWhite,
     marginHorizontal: theme.spacing.lg,
-    marginTop: -theme.spacing.xl,
+    marginTop: theme.spacing.lg,
     borderRadius: theme.borderRadius.xl,
     ...theme.shadows.card,
   },
