@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
+import { spacing } from '../theme/spacing';
 
 interface CardProps {
   children: React.ReactNode;
   variant?: 'default' | 'elevated' | 'outlined';
-  padding?: keyof typeof theme.spacing;
-  style?: ViewStyle;
+  padding?: keyof typeof spacing;
+  style?: StyleProp<ViewStyle>;
 }
 
 const Card: React.FC<CardProps> = ({

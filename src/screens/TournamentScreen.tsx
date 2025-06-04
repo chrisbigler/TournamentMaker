@@ -15,7 +15,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Tournament, Match, Team } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService from '../services/TournamentService';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
+import { Card, Button } from '../components';
 
 type TournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Tournament'>;
 type TournamentScreenRouteProp = RouteProp<RootStackParamList, 'Tournament'>;
@@ -29,6 +31,8 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   const { tournamentId } = route.params;
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   const loadTournament = async () => {
     try {
@@ -123,45 +127,72 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
     const isBye = !match.team2;
     
     return (
-      <TouchableOpacity
-        style={[styles.matchCard, isComplete && styles.matchCardComplete]}
-        onPress={() => {
-          if (!isBye && !isComplete) {
-            navigation.navigate('Match', { matchId: match.id, tournamentId });
-          }
-        }}
-        disabled={isBye || isComplete}
-        activeOpacity={0.7}>
-        <View style={styles.matchHeader}>
-          <Text style={styles.roundText}>
-            {TournamentService.getRoundDisplayText(tournament?.matches || [], match.round)}
-          </Text>
-          {isComplete && <Text style={styles.completeText}>✓ Complete</Text>}
-          {isBye && <Text style={styles.byeText}>BYE</Text>}
-        </View>
-        
-        <View style={styles.teamsContainer}>
-          <View style={[styles.teamRow, match.winner?.id === match.team1.id && styles.winnerRow]}>
-            <Text style={[styles.teamName, match.winner?.id === match.team1.id && styles.winnerText]}>
-              {match.team1.teamName}
+      <Card 
+        variant="outlined" 
+        padding="lg"
+        style={[
+          styles.matchCard,
+          isComplete && styles.matchCardComplete,
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            if (!isBye && !isComplete) {
+              navigation.navigate('Match', { matchId: match.id, tournamentId });
+            }
+          }}
+          disabled={isBye || isComplete}
+          activeOpacity={0.7}
+        >
+          <View style={styles.matchHeader}>
+            <Text style={styles.roundText}>
+              {TournamentService.getRoundDisplayText(tournament?.matches || [], match.round)}
             </Text>
-            <Text style={[styles.score, match.winner?.id === match.team1.id && styles.winnerText]}>
-              {match.score1}
-            </Text>
+            {isComplete && <Text style={styles.completeText}>✓ Complete</Text>}
+            {isBye && <Text style={styles.byeText}>BYE</Text>}
           </View>
           
-          {match.team2 && (
-            <View style={[styles.teamRow, match.winner?.id === match.team2.id && styles.winnerRow]}>
-              <Text style={[styles.teamName, match.winner?.id === match.team2.id && styles.winnerText]}>
-                {match.team2.teamName}
+          <View style={styles.teamsContainer}>
+            <View style={[
+              styles.teamRow,
+              match.winner?.id === match.team1.id && styles.winnerRow,
+            ]}>
+              <Text style={[
+                styles.teamName,
+                match.winner?.id === match.team1.id && styles.winnerText,
+              ]}>
+                {match.team1.teamName}
               </Text>
-              <Text style={[styles.score, match.winner?.id === match.team2.id && styles.winnerText]}>
-                {match.score2}
+              <Text style={[
+                styles.score,
+                match.winner?.id === match.team1.id && styles.winnerText,
+              ]}>
+                {match.score1}
               </Text>
             </View>
-          )}
-        </View>
-      </TouchableOpacity>
+            
+            {match.team2 && (
+              <View style={[
+                styles.teamRow,
+                match.winner?.id === match.team2.id && styles.winnerRow,
+              ]}>
+                <Text style={[
+                  styles.teamName,
+                  match.winner?.id === match.team2.id && styles.winnerText,
+                ]}>
+                  {match.team2.teamName}
+                </Text>
+                <Text style={[
+                  styles.score,
+                  match.winner?.id === match.team2.id && styles.winnerText,
+                ]}>
+                  {match.score2}
+                </Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Card>
     );
   };
 
@@ -182,8 +213,8 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text>Loading tournament...</Text>
+        <View style={styles.centerContainer}>
+          <Text style={styles.loadingText}>Loading tournament...</Text>
         </View>
       </SafeAreaView>
     );
@@ -192,13 +223,15 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   if (!tournament) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
+        <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Tournament not found</Text>
-          <TouchableOpacity
+          <Button
+            title="Go Back"
+            onPress={() => navigation.goBack()}
+            variant="primary"
+            size="md"
             style={styles.backButton}
-            onPress={() => navigation.goBack()}>
-            <Text style={styles.backButtonText}>Go Back</Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -216,7 +249,7 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerCard}>
+        <Card variant="default" padding="lg" style={styles.headerCard}>
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
               <Text style={styles.tournamentName}>{tournament.name}</Text>
@@ -225,19 +258,22 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
               </Text>
             </View>
             
-            <TouchableOpacity
+            <Button
+              title="Delete"
+              onPress={deleteTournament}
+              variant="outline"
+              size="sm"
               style={styles.deleteButton}
-              onPress={deleteTournament}>
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
+              textStyle={styles.deleteButtonText}
+            />
           </View>
-        </View>
+        </Card>
         
         {isComplete && winner && (
-          <View style={styles.winnerContainer}>
+          <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
             <Text style={styles.winnerTitle}>🏆 Champion</Text>
             <Text style={styles.winnerName}>{winner.teamName}</Text>
-          </View>
+          </Card>
         )}
       </View>
 
@@ -256,208 +292,163 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  header: {
-    backgroundColor: theme.colors.background.coolGray,
-    padding: 16,
-    gap: 12,
-  },
-  headerCard: {
-    backgroundColor: theme.colors.background.pureWhite,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: theme.colors.text.richBlack,
-    shadowOffset: {
-      width: 0,
-      height: 1,
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.coolGray,
     },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  tournamentName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 4,
-  },
-  statusText: {
-    fontSize: 14,
-    color: theme.colors.text.darkGray,
-  },
-  deleteButton: {
-    backgroundColor: theme.colors.accent.errorRed,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-    elevation: 1,
-    shadowColor: theme.colors.text.richBlack,
-    shadowOffset: {
-      width: 0,
-      height: 1,
+    header: {
+      backgroundColor: theme.colors.background.coolGray,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.md,
     },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.5,
-  },
-  deleteButtonText: {
-    fontSize: 14,
-    color: theme.colors.background.pureWhite,
-    fontWeight: '600',
-  },
-  winnerContainer: {
-    backgroundColor: theme.colors.background.pureWhite3cd,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.accent.warningOrange,
-    alignItems: 'center',
-  },
-  winnerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.accent.warningOrange,
-    marginBottom: 4,
-  },
-  winnerName: {
-    fontSize: 16,
-    color: theme.colors.accent.warningOrange,
-  },
-  bracketContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  roundSection: {
-    marginBottom: 24,
-  },
-  roundTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  matchCard: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: theme.colors.text.richBlack,
-    shadowOffset: {
-      width: 0,
-      height: 1,
+    headerCard: {
+      backgroundColor: theme.colors.background.pureWhite,
     },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-  },
-  matchCardComplete: {
-    backgroundColor: theme.colors.background.coolGray,
-    borderWidth: 1,
-    borderColor: theme.colors.accent.successGreen,
-  },
-  matchHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  roundText: {
-    fontSize: 14,
-    color: theme.colors.text.darkGray,
-    fontWeight: '500',
-  },
-  completeText: {
-    fontSize: 12,
-    color: theme.colors.accent.successGreen,
-    fontWeight: 'bold',
-  },
-  byeText: {
-    fontSize: 12,
-    color: theme.colors.accent.warningOrange,
-    fontWeight: 'bold',
-  },
-  teamsContainer: {
-    gap: 8,
-  },
-  teamRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  winnerRow: {
-    backgroundColor: theme.colors.accent.successGreen,
-    borderWidth: 1,
-    borderColor: theme.colors.accent.successGreen,
-  },
-  teamName: {
-    fontSize: 16,
-    color: theme.colors.text.richBlack,
-    flex: 1,
-  },
-  winnerText: {
-    fontWeight: 'bold',
-    color: theme.colors.accent.successGreen,
-  },
-  score: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
-    minWidth: 30,
-    textAlign: 'center',
-  },
-  footer: {
-    padding: 16,
-    alignItems: 'center',
-    backgroundColor: theme.colors.background.pureWhite,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.light.border,
-  },
-  footerText: {
-    fontSize: 14,
-    color: theme.colors.text.darkGray,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 18,
-    color: theme.colors.text.darkGray,
-    marginBottom: 20,
-  },
-  backButton: {
-    backgroundColor: theme.colors.primary.electricBlue,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  backButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontWeight: 'bold',
-  },
-});
+    headerTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    headerLeft: {
+      flex: 1,
+      marginRight: theme.spacing.lg,
+    },
+    tournamentName: {
+      ...theme.textStyles.h3,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.xs,
+    },
+    statusText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.darkGray,
+    },
+    deleteButton: {
+      backgroundColor: 'transparent',
+      borderColor: theme.colors.accent.errorRed,
+    },
+    deleteButtonText: {
+      color: theme.colors.accent.errorRed,
+    },
+    winnerContainer: {
+      backgroundColor: theme.colors.background.pureWhite,
+      borderColor: theme.colors.accent.warningOrange,
+      alignItems: 'center',
+    },
+    winnerTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.accent.warningOrange,
+      marginBottom: theme.spacing.xs,
+    },
+    winnerName: {
+      ...theme.textStyles.bodyLarge,
+      color: theme.colors.accent.warningOrange,
+      fontWeight: theme.typography.fontWeights.semibold,
+    },
+    bracketContainer: {
+      flex: 1,
+      padding: theme.spacing.lg,
+    },
+    roundSection: {
+      marginBottom: theme.spacing['3xl'],
+    },
+    roundTitle: {
+      ...theme.textStyles.h3,
+      color: theme.colors.text.richBlack,
+      marginBottom: theme.spacing.lg,
+      textAlign: 'center',
+    },
+    matchCard: {
+      marginBottom: theme.spacing.md,
+    },
+    matchCardComplete: {
+      backgroundColor: theme.colors.background.pureWhite,
+      borderColor: theme.colors.accent.successGreen,
+      borderWidth: 2,
+    },
+    matchHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.md,
+    },
+    roundText: {
+      ...theme.textStyles.label,
+      color: theme.colors.text.darkGray,
+    },
+    completeText: {
+      ...theme.textStyles.caption,
+      color: theme.colors.accent.successGreen,
+      fontWeight: theme.typography.fontWeights.bold,
+      textTransform: 'uppercase',
+    },
+    byeText: {
+      ...theme.textStyles.caption,
+      color: theme.colors.accent.warningOrange,
+      fontWeight: theme.typography.fontWeights.bold,
+      textTransform: 'uppercase',
+    },
+    teamsContainer: {
+      gap: theme.spacing.sm,
+    },
+    teamRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.background.coolGray,
+    },
+    winnerRow: {
+      backgroundColor: theme.colors.accent.successGreen,
+    },
+    teamName: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.richBlack,
+      flex: 1,
+    },
+    winnerText: {
+      fontWeight: theme.typography.fontWeights.bold,
+      color: theme.colors.text.white,
+    },
+    score: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.richBlack,
+      minWidth: 30,
+      textAlign: 'center',
+      fontWeight: theme.typography.fontWeights.bold,
+    },
+    footer: {
+      padding: theme.spacing.lg,
+      alignItems: 'center',
+      backgroundColor: theme.colors.background.pureWhite,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.light.border,
+    },
+    footerText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.darkGray,
+    },
+    centerContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: theme.spacing.xl,
+    },
+    loadingText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.darkGray,
+    },
+    errorText: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.darkGray,
+      marginBottom: theme.spacing.xl,
+      textAlign: 'center',
+    },
+    backButton: {
+      marginTop: theme.spacing.lg,
+    },
+  });
 
 export default TournamentScreen; 
