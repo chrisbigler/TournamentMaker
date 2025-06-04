@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../types';
 import { useTheme } from '../theme';
+import { useThemeMode } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -24,18 +25,24 @@ const Tab = createBottomTabNavigator();
 // Create stack navigators for each tab
 const HomeStack = () => {
   const theme = useTheme();
+  const { mode } = useThemeMode();
+  
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
+    ...theme.shadows.card,
+  };
+  
+  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.primary.deepNavy,
-          ...theme.shadows.card,
-        },
-        headerTintColor: theme.colors.text.white,
+        headerStyle,
+        headerTintColor,
         headerTitleStyle: {
           fontWeight: theme.textStyles.h3.fontWeight,
           fontSize: theme.textStyles.h3.fontSize,
-          color: theme.colors.text.white,
+          color: headerTintColor,
         },
         headerBackTitleVisible: false,
         cardStyle: {
@@ -69,18 +76,24 @@ const HomeStack = () => {
 
 const PlayersStack = () => {
   const theme = useTheme();
+  const { mode } = useThemeMode();
+  
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
+    ...theme.shadows.card,
+  };
+  
+  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.primary.deepNavy,
-          ...theme.shadows.card,
-        },
-        headerTintColor: theme.colors.text.white,
+        headerStyle,
+        headerTintColor,
         headerTitleStyle: {
           fontWeight: theme.textStyles.h3.fontWeight,
           fontSize: theme.textStyles.h3.fontSize,
-          color: theme.colors.text.white,
+          color: headerTintColor,
         },
         headerBackTitleVisible: false,
         cardStyle: {
@@ -104,18 +117,24 @@ const PlayersStack = () => {
 
 const PlayerGroupsStack = () => {
   const theme = useTheme();
+  const { mode } = useThemeMode();
+  
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
+    ...theme.shadows.card,
+  };
+  
+  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.primary.deepNavy,
-          ...theme.shadows.card,
-        },
-        headerTintColor: theme.colors.text.white,
+        headerStyle,
+        headerTintColor,
         headerTitleStyle: {
           fontWeight: theme.textStyles.h3.fontWeight,
           fontSize: theme.textStyles.h3.fontSize,
-          color: theme.colors.text.white,
+          color: headerTintColor,
         },
         headerBackTitleVisible: false,
         cardStyle: {
@@ -139,18 +158,24 @@ const PlayerGroupsStack = () => {
 
 const HistoryStack = () => {
   const theme = useTheme();
+  const { mode } = useThemeMode();
+  
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
+    ...theme.shadows.card,
+  };
+  
+  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.colors.primary.deepNavy,
-          ...theme.shadows.card,
-        },
-        headerTintColor: theme.colors.text.white,
+        headerStyle,
+        headerTintColor,
         headerTitleStyle: {
           fontWeight: theme.textStyles.h3.fontWeight,
           fontSize: theme.textStyles.h3.fontSize,
-          color: theme.colors.text.white,
+          color: headerTintColor,
         },
         headerBackTitleVisible: false,
         cardStyle: {

@@ -133,51 +133,62 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderTournamentItem = ({ item }: { item: Tournament }) => (
-    <TouchableOpacity
-      onPress={() => handleTournamentPress(item)}
-      activeOpacity={0.7}>
-      <Card variant="outlined" style={styles.tournamentItem}>
-        <View style={styles.tournamentHeader}>
-          <Text style={[styles.tournamentName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
-          <View style={styles.statusContainer}>
-            <MaterialIcons 
-              name={getStatusIcon(item.status)} 
-              size={16} 
-              color={getStatusColor(item.status)} 
-              style={styles.statusIcon}
-            />
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-              <Text style={[styles.statusText, { color: theme.colors.background.pureWhite }]}>{getStatusText(item.status)}</Text>
+  const renderTournamentItem = ({ item }: { item: Tournament }) => {
+    const cardStyle = {
+      ...styles.tournamentItem,
+      borderLeftWidth: 4,
+      borderLeftColor: getStatusColor(item.status),
+    };
+    
+    return (
+      <TouchableOpacity
+        onPress={() => handleTournamentPress(item)}
+        activeOpacity={0.7}>
+        <Card 
+          variant="outlined" 
+          style={cardStyle}
+        >
+          <View style={styles.tournamentHeader}>
+            <Text style={[styles.tournamentName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
+            <View style={styles.statusContainer}>
+              <MaterialIcons 
+                name={getStatusIcon(item.status)} 
+                size={16} 
+                color={getStatusColor(item.status)} 
+                style={styles.statusIcon}
+              />
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+                <Text style={[styles.statusText, { color: theme.colors.background.pureWhite }]}>{getStatusText(item.status)}</Text>
+              </View>
             </View>
           </View>
-        </View>
-        
-        <View style={styles.tournamentDetails}>
-          <View style={styles.detailItem}>
-            <MaterialIcons name="groups" size={16} color={theme.colors.text.darkGray} />
-            <Text style={[styles.detailText, { color: theme.colors.text.darkGray }]}>Teams: {item.teams.length}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <MaterialIcons name="timer" size={16} color={theme.colors.text.darkGray} />
-            <Text style={[styles.detailText, { color: theme.colors.text.darkGray }]}>Round: {item.currentRound}</Text>
-          </View>
-          {item.winner && (
+          
+          <View style={styles.tournamentDetails}>
             <View style={styles.detailItem}>
-              <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
-              <Text style={[styles.winnerText, { color: theme.colors.accent.successGreen }]}>Winner: {item.winner.teamName}</Text>
+              <MaterialIcons name="groups" size={16} color={theme.colors.accent.infoBlue} />
+              <Text style={[styles.detailText, { color: theme.colors.accent.infoBlue }]}>Teams: {item.teams.length}</Text>
             </View>
-          )}
-        </View>
-        
-        <Text style={[styles.dateText, { color: theme.colors.text.mediumGray }]}>{formatDate(item.createdAt)}</Text>
-      </Card>
-    </TouchableOpacity>
-  );
+            <View style={styles.detailItem}>
+              <MaterialIcons name="timer" size={16} color={theme.colors.accent.infoBlue} />
+              <Text style={[styles.detailText, { color: theme.colors.accent.infoBlue }]}>Round: {item.currentRound}</Text>
+            </View>
+            {item.winner && (
+              <View style={styles.detailItem}>
+                <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
+                <Text style={[styles.winnerText, { color: theme.colors.accent.successGreen }]}>Winner: {item.winner.teamName}</Text>
+              </View>
+            )}
+          </View>
+          
+          <Text style={[styles.dateText, { color: theme.colors.text.mediumGray }]}>{formatDate(item.createdAt)}</Text>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MaterialIcons name="history" size={64} color={theme.colors.text.mediumGray} style={styles.emptyIcon} />
+      <MaterialIcons name="history" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
       <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>No Tournament History</Text>
       <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
         Create your first tournament to see it appear here!

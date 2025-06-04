@@ -221,6 +221,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
+      <MaterialIcons name="person-add" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
       <Text style={styles.emptyStateTitle}>No Players Yet</Text>
       <Text style={styles.emptyStateText}>
         Add your first player to get started with tournaments
@@ -480,6 +481,9 @@ const createStyles = (theme: Theme) =>
     ...theme.textStyles.body,
     color: theme.colors.text.darkGray,
     marginTop: theme.spacing.lg,
+  },
+  emptyIcon: {
+    marginBottom: theme.spacing.lg,
   },
   });
 
