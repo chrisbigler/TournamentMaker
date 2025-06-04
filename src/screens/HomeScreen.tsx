@@ -13,7 +13,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import { MaterialIcons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeMain'>;
 
@@ -22,6 +23,8 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   useEffect(() => {
     // Initialize database when app starts
     initializeDatabase();
@@ -153,7 +156,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.coolGray,
@@ -297,6 +301,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.mediumGray,
     lineHeight: 20,
   },
-});
+  });
 
 export default HomeScreen; 

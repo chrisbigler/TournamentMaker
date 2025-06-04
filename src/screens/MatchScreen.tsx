@@ -15,7 +15,8 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList, Match, Tournament } from '../types';
 import TournamentService from '../services/TournamentService';
 import DatabaseService from '../services/DatabaseService';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -29,6 +30,8 @@ interface Props {
 }
 
 const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const { matchId, tournamentId } = route.params;
   const [match, setMatch] = useState<Match | null>(null);
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -374,7 +377,8 @@ const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.coolGray,
@@ -585,6 +589,6 @@ const styles = StyleSheet.create({
     ...theme.textStyles.h3,
     marginBottom: theme.spacing.xl,
   },
-});
+  });
 
 export default MatchScreen; 

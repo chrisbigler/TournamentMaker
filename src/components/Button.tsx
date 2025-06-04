@@ -7,7 +7,8 @@ import {
   TextStyle,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 
 interface ButtonProps {
   title: string;
@@ -30,6 +31,8 @@ const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
 }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const buttonStyle = [
     styles.base,
     styles[variant],
@@ -80,7 +83,8 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -158,6 +162,6 @@ const styles = StyleSheet.create({
   lgText: {
     fontSize: theme.textStyles.buttonLarge.fontSize,
   },
-});
+  });
 
 export default Button; 

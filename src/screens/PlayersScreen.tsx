@@ -15,7 +15,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Player } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService from '../services/TournamentService';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ProfilePicture from '../components/ProfilePicture';
@@ -28,6 +29,8 @@ interface Props {
 }
 
 const PlayersScreen: React.FC<Props> = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [fixingStats, setFixingStats] = useState(false);
@@ -275,7 +278,8 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.pureWhite,
@@ -475,6 +479,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.darkGray,
     marginTop: theme.spacing.lg,
   },
-});
+  });
 
 export default PlayersScreen; 

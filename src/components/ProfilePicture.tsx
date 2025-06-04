@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, Dimensions } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 
 interface ProfilePictureProps {
   profilePicture?: string;
@@ -17,6 +18,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   style,
   showBorder = false,
 }) => {
+  const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
   const screenWidth = Dimensions.get('window').width;
   
   const getSizeValue = (sizeInput: number | string): number => {
@@ -81,7 +84,8 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     overflow: 'hidden',
     justifyContent: 'center',
@@ -110,6 +114,6 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.background.pureWhite,
     backgroundColor: 'transparent',
   },
-});
+  });
 
 export default ProfilePicture; 
