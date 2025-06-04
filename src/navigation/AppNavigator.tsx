@@ -46,7 +46,7 @@ const HomeStack = () => {
       <Stack.Screen
         name="HomeMain"
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{ title: 'Tournament Maker' }}
       />
       <Stack.Screen
         name="CreateTournament"

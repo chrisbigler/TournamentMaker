@@ -13,7 +13,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Tournament, TournamentStatus } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import { MaterialIcons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
+import { Button, Card } from '../components';
 
 type TournamentHistoryNavigationProp = StackNavigationProp<RootStackParamList, 'TournamentHistory'>;
 
@@ -24,6 +25,7 @@ interface Props {
 const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
 
   const loadTournamentHistory = useCallback(async () => {
     try {
@@ -133,73 +135,74 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderTournamentItem = ({ item }: { item: Tournament }) => (
     <TouchableOpacity
-      style={styles.tournamentItem}
       onPress={() => handleTournamentPress(item)}
       activeOpacity={0.7}>
-      <View style={styles.tournamentHeader}>
-        <Text style={styles.tournamentName}>{item.name}</Text>
-        <View style={styles.statusContainer}>
-          <MaterialIcons 
-            name={getStatusIcon(item.status)} 
-            size={16} 
-            color={getStatusColor(item.status)} 
-            style={styles.statusIcon}
-          />
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
+      <Card variant="outlined" style={styles.tournamentItem}>
+        <View style={styles.tournamentHeader}>
+          <Text style={[styles.tournamentName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
+          <View style={styles.statusContainer}>
+            <MaterialIcons 
+              name={getStatusIcon(item.status)} 
+              size={16} 
+              color={getStatusColor(item.status)} 
+              style={styles.statusIcon}
+            />
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+              <Text style={[styles.statusText, { color: theme.colors.background.pureWhite }]}>{getStatusText(item.status)}</Text>
+            </View>
           </View>
         </View>
-      </View>
-      
-      <View style={styles.tournamentDetails}>
-        <View style={styles.detailItem}>
-          <MaterialIcons name="groups" size={16} color={theme.colors.text.darkGray} />
-          <Text style={styles.detailText}>Teams: {item.teams.length}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <MaterialIcons name="timer" size={16} color={theme.colors.text.darkGray} />
-          <Text style={styles.detailText}>Round: {item.currentRound}</Text>
-        </View>
-        {item.winner && (
+        
+        <View style={styles.tournamentDetails}>
           <View style={styles.detailItem}>
-            <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
-            <Text style={styles.winnerText}>Winner: {item.winner.teamName}</Text>
+            <MaterialIcons name="groups" size={16} color={theme.colors.text.darkGray} />
+            <Text style={[styles.detailText, { color: theme.colors.text.darkGray }]}>Teams: {item.teams.length}</Text>
           </View>
-        )}
-      </View>
-      
-      <Text style={styles.dateText}>{formatDate(item.createdAt)}</Text>
+          <View style={styles.detailItem}>
+            <MaterialIcons name="timer" size={16} color={theme.colors.text.darkGray} />
+            <Text style={[styles.detailText, { color: theme.colors.text.darkGray }]}>Round: {item.currentRound}</Text>
+          </View>
+          {item.winner && (
+            <View style={styles.detailItem}>
+              <MaterialIcons name="emoji-events" size={16} color={theme.colors.accent.successGreen} />
+              <Text style={[styles.winnerText, { color: theme.colors.accent.successGreen }]}>Winner: {item.winner.teamName}</Text>
+            </View>
+          )}
+        </View>
+        
+        <Text style={[styles.dateText, { color: theme.colors.text.mediumGray }]}>{formatDate(item.createdAt)}</Text>
+      </Card>
     </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <MaterialIcons name="history" size={64} color={theme.colors.text.mediumGray} style={styles.emptyIcon} />
-      <Text style={styles.emptyStateTitle}>No Tournament History</Text>
-      <Text style={styles.emptyStateText}>
+      <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>No Tournament History</Text>
+      <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
         Create your first tournament to see it appear here!
       </Text>
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={() => navigation.navigate('CreateTournament')}>
-        <MaterialIcons name="add" size={20} color={theme.colors.background.pureWhite} style={styles.buttonIcon} />
-        <Text style={styles.createButtonText}>Create Tournament</Text>
-      </TouchableOpacity>
+      <Button
+        title="Create Tournament"
+        onPress={() => navigation.navigate('CreateTournament')}
+        variant="primary"
+        size="md"
+      />
     </View>
   );
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background.coolGray }]}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading tournament history...</Text>
+          <Text style={[styles.loadingText, { color: theme.colors.text.darkGray }]}>Loading tournament history...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background.coolGray }]}>
       <FlatList
         data={tournaments}
         renderItem={renderTournamentItem}
@@ -211,7 +214,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       
       {/* Dev Button - Floating trash button */}
       <TouchableOpacity
-        style={styles.devButton}
+        style={[styles.devButton, { backgroundColor: theme.colors.accent.errorRed }]}
         onPress={clearAllTournaments}
         activeOpacity={0.8}>
         <MaterialIcons name="delete" size={24} color={theme.colors.background.pureWhite} />
@@ -223,7 +226,6 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
   },
   loadingContainer: {
     flex: 1,
@@ -232,7 +234,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: theme.colors.text.darkGray,
   },
   listContainer: {
     padding: 16,
@@ -243,18 +244,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   tournamentItem: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderRadius: 12,
-    padding: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: theme.colors.text.richBlack,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
   },
   tournamentHeader: {
     flexDirection: 'row',
@@ -265,7 +255,6 @@ const styles = StyleSheet.create({
   tournamentName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
     flex: 1,
   },
   statusContainer: {
@@ -281,7 +270,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: theme.colors.background.pureWhite,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -298,18 +286,15 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: theme.colors.text.darkGray,
     marginLeft: 4,
   },
   winnerText: {
     fontSize: 14,
-    color: theme.colors.accent.successGreen,
     fontWeight: 'bold',
     marginLeft: 4,
   },
   dateText: {
     fontSize: 12,
-    color: theme.colors.text.mediumGray,
   },
   emptyState: {
     alignItems: 'center',
@@ -321,43 +306,24 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.text.richBlack,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    color: theme.colors.text.darkGray,
     textAlign: 'center',
     marginBottom: 24,
-  },
-  createButton: {
-    backgroundColor: theme.colors.primary.electricBlue,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  createButtonText: {
-    color: theme.colors.background.pureWhite,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   devButton: {
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: theme.colors.accent.errorRed,
     width: 56,
     height: 56,
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
-    shadowColor: theme.colors.text.richBlack,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 4,
