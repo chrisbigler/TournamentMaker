@@ -44,11 +44,36 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
+
+        {/* Welcome Message */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome back!</Text>
+          <Text style={styles.welcomeMessage}>
+            Ready to organize your next tournament? Use the navigation below to manage players, create groups, or view your tournament history.
+          </Text>
+        </View>
         
-        {/* Quick Create Tournament Button */}
-        <View style={styles.quickCreateSection}>
+        {/* Getting Started Section */}
+        <View style={styles.tipsSection}>
+          <Text style={styles.sectionTitle}>Getting Started</Text>
+          
+          <View style={styles.tipCard}>
+            <MaterialIcons 
+              name="lightbulb" 
+              size={40} 
+              color={theme.colors.primary.electricBlue} 
+            />
+            <View style={styles.tipContent}>
+              <Text style={styles.tipTitle}>Pro Tip</Text>
+              <Text style={styles.tipDescription}>
+                Set up your players and groups first, then creating tournaments becomes quick and easy!
+              </Text>
+            </View>
+          </View>
+
+          {/* Create Tournament Button */}
           <TouchableOpacity
-            style={styles.quickCreateButton}
+            style={styles.createTournamentButton}
             onPress={() => navigation.navigate('CreateTournament')}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -58,16 +83,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               size={24} 
               color={theme.colors.text.white} 
             />
-            <Text style={styles.quickCreateText}>Create Tournament</Text>
+            <Text style={styles.createTournamentText}>Create Tournament</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Welcome Message */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome back!</Text>
-          <Text style={styles.welcomeMessage}>
-            Ready to organize your next tournament? Use the navigation below to manage players, create groups, or view your tournament history.
-          </Text>
         </View>
 
         {/* Feature Highlights */}
@@ -112,25 +129,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Tips Section */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.sectionTitle}>Getting Started</Text>
-          <View style={styles.tipCard}>
-            <View style={styles.tipIconContainer}>
-              <MaterialIcons 
-                name="lightbulb" 
-                size={24} 
-                color={theme.colors.primary.electricBlue} 
-              />
-            </View>
-            <View style={styles.tipContent}>
-              <Text style={styles.tipTitle}>Pro Tip</Text>
-              <Text style={styles.tipDescription}>
-                Set up your players and groups first, then creating tournaments becomes quick and easy!
-              </Text>
-            </View>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -147,39 +145,15 @@ const createStyles = (theme: Theme) =>
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 100, // Increased padding for bottom navigation clearance
-  },
-  quickCreateSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing['2xl'],
-    alignItems: 'center',
-    backgroundColor: theme.colors.background.pureWhite,
-    marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.card,
-  },
-  quickCreateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary.electricBlue,
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing['2xl'],
-    borderRadius: theme.borderRadius.xl,
-    gap: theme.spacing.sm,
-    ...theme.shadows.card,
-  },
-  quickCreateText: {
-    ...theme.textStyles.buttonLarge,
-    color: theme.colors.text.white,
-    fontWeight: 'bold',
+    paddingTop: theme.spacing.lg,
+    paddingBottom: 100, // Padding for bottom navigation clearance
   },
   welcomeSection: {
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing['2xl'],
     backgroundColor: theme.colors.background.pureWhite,
     marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
     borderRadius: theme.borderRadius.xl,
     ...theme.shadows.card,
   },
@@ -195,10 +169,14 @@ const createStyles = (theme: Theme) =>
     textAlign: 'center',
     lineHeight: 22,
   },
-  featuresSection: {
+  tipsSection: {
     paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing['3xl'],
-    paddingBottom: theme.spacing.xl,
+    paddingVertical: theme.spacing['2xl'],
+    backgroundColor: theme.colors.background.pureWhite,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    borderRadius: theme.borderRadius.xl,
+    ...theme.shadows.card,
   },
   sectionTitle: {
     ...theme.textStyles.h3,
@@ -206,15 +184,63 @@ const createStyles = (theme: Theme) =>
     marginBottom: theme.spacing.xl,
     fontWeight: '600',
   },
+  tipCard: {
+    backgroundColor: theme.colors.background.coolGray,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  tipContent: {
+    alignItems: 'center',
+  },
+  tipTitle: {
+    ...theme.textStyles.h4,
+    color: theme.colors.text.darkGray,
+    fontWeight: '600',
+    marginBottom: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  tipDescription: {
+    ...theme.textStyles.body,
+    color: theme.colors.text.mediumGray,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  createTournamentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary.electricBlue,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.xl,
+    gap: theme.spacing.sm,
+    ...theme.shadows.card,
+    width: '100%',
+  },
+  createTournamentText: {
+    ...theme.textStyles.buttonLarge,
+    color: theme.colors.text.white,
+    fontWeight: 'bold',
+  },
+  featuresSection: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing['2xl'],
+    backgroundColor: theme.colors.background.pureWhite,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    borderRadius: theme.borderRadius.xl,
+    ...theme.shadows.card,
+  },
   featureGrid: {
     gap: theme.spacing.lg,
   },
   featureCard: {
-    backgroundColor: theme.colors.background.pureWhite,
+    backgroundColor: theme.colors.background.coolGray,
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
-    ...theme.shadows.card,
   },
   featureTitle: {
     ...theme.textStyles.h4,
@@ -227,39 +253,6 @@ const createStyles = (theme: Theme) =>
     ...theme.textStyles.body,
     color: theme.colors.text.mediumGray,
     textAlign: 'center',
-    lineHeight: 20,
-  },
-  tipsSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing['3xl'],
-    paddingTop: theme.spacing.lg,
-  },
-  tipCard: {
-    backgroundColor: theme.colors.background.pureWhite,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing.md,
-    ...theme.shadows.card,
-  },
-  tipIconContainer: {
-    backgroundColor: theme.colors.background.coolGray,
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.lg,
-  },
-  tipContent: {
-    flex: 1,
-  },
-  tipTitle: {
-    ...theme.textStyles.h4,
-    color: theme.colors.text.darkGray,
-    fontWeight: '600',
-    marginBottom: theme.spacing.xs,
-  },
-  tipDescription: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.mediumGray,
     lineHeight: 20,
   },
   });
