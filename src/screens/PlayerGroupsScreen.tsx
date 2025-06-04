@@ -14,6 +14,7 @@ import { RootStackParamList, PlayerGroup, SerializedPlayerGroup } from '../types
 import DatabaseService from '../services/DatabaseService';
 import { useTheme } from '../theme';
 import { Button, Card } from '../components';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type PlayerGroupsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PlayerGroups'>;
 
@@ -63,9 +64,12 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
       <Card variant="outlined" style={styles.groupCard}>
         <View style={styles.groupInfo}>
           <Text style={[styles.groupName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
-          <Text style={[styles.playerCount, { color: theme.colors.text.darkGray }]}>
-            {item.players.length} players
-          </Text>
+          <View style={styles.playerCountContainer}>
+            <MaterialIcons name="people" size={16} color={theme.colors.accent.infoBlue} />
+            <Text style={[styles.playerCount, { color: theme.colors.accent.infoBlue }]}>
+              {item.players.length} players
+            </Text>
+          </View>
           <Text style={[styles.createdDate, { color: theme.colors.text.mediumGray }]}>
             Created {item.createdAt.toLocaleDateString()}
           </Text>
@@ -79,6 +83,7 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
+      <MaterialIcons name="group-work" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
       <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>No Player Groups</Text>
       <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
         Create player groups to quickly set up tournaments with the same people
@@ -153,9 +158,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
   },
+  playerCountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   playerCount: {
     fontSize: 14,
-    marginBottom: 2,
+    marginLeft: 4,
   },
   createdDate: {
     fontSize: 12,
@@ -171,6 +181,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+  },
+  emptyIcon: {
+    marginBottom: 16,
   },
   emptyStateTitle: {
     fontSize: 20,
