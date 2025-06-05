@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -32,8 +33,10 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [fixingStats, setFixingStats] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadPlayers = async () => {
     try {
@@ -42,6 +45,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       // Sort players by win percentage (descending)
       const sortedPlayers = sortPlayersByWinPercentage(allPlayers);
       setPlayers(sortedPlayers);
+      setFilteredPlayers(sortedPlayers);
     } catch (error) {
       Alert.alert('Error', 'Failed to load players');
       console.error('Failed to load players:', error);
@@ -49,6 +53,19 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(false);
     }
   };
+
+  // Filter players based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredPlayers(players);
+    } else {
+      const filtered = players.filter(player =>
+        player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (player.nickname && player.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredPlayers(filtered);
+    }
+  }, [searchQuery, players]);
 
   const sortPlayersByWinPercentage = (playerList: Player[]) => {
     return [...playerList].sort((a, b) => {
@@ -219,35 +236,49 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <MaterialIcons name="person-add" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
-      <Text style={styles.emptyStateTitle}>No Players Yet</Text>
-      <Text style={styles.emptyStateText}>
-        Add your first player to get started with tournaments
-      </Text>
-      <Button
-        title="Add First Player"
-        onPress={() => navigation.navigate('CreatePlayer', {})}
-        variant="primary"
-        style={styles.emptyStateButton}
-      />
-    </View>
-  );
+  const renderEmptyState = () => {
+    if (searchQuery.trim() !== '') {
+      // Empty state for search with no results
+      return (
+        <View style={styles.emptyState}>
+          <MaterialIcons name="search-off" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
+          <Text style={styles.emptyStateTitle}>No Players Found</Text>
+          <Text style={styles.emptyStateText}>
+            Try adjusting your search or add a new player
+          </Text>
+          <Button
+            title="Add New Player"
+            onPress={() => navigation.navigate('CreatePlayer', {})}
+            variant="primary"
+            style={styles.emptyStateButton}
+          />
+        </View>
+      );
+    }
+
+    // Empty state for no players at all
+    return (
+      <View style={styles.emptyState}>
+        <MaterialIcons name="person-add" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
+        <Text style={styles.emptyStateTitle}>No Players Yet</Text>
+        <Text style={styles.emptyStateText}>
+          Add your first player to get started with tournaments
+        </Text>
+        <Button
+          title="Add First Player"
+          onPress={() => navigation.navigate('CreatePlayer', {})}
+          variant="primary"
+          style={styles.emptyStateButton}
+        />
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Players ({players.length})</Text>
+        <Text style={styles.title}>Players ({filteredPlayers.length})</Text>
         <View style={styles.headerButtons}>
-          <Button
-            title="Reset"
-            onPress={handleFixPlayerStats}
-            variant="outline"
-            size="sm"
-            style={styles.fixButton}
-            disabled={fixingStats}
-          />
           <Button
             title="+ Add Player"
             onPress={() => navigation.navigate('CreatePlayer', {})}
@@ -255,6 +286,38 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
             size="sm"
           />
         </View>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <MaterialIcons 
+            name="search" 
+            size={20} 
+            color={theme.colors.text.mediumGray} 
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search players..."
+            placeholderTextColor={theme.colors.text.mediumGray}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={handleFixPlayerStats}
+          disabled={fixingStats}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons 
+            name="sync" 
+            size={20} 
+            color={theme.colors.background.pureWhite} 
+          />
+        </TouchableOpacity>
       </View>
 
       {loading || fixingStats ? (
@@ -269,7 +332,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={players}
+          data={filteredPlayers}
           renderItem={renderPlayer}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContainer}
@@ -305,8 +368,50 @@ const createStyles = (theme: Theme) =>
     flexDirection: 'row',
     gap: theme.spacing.sm,
   },
-  fixButton: {
-    minWidth: 80,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 12,
+    backgroundColor: theme.colors.background.pureWhite,
+    borderWidth: 1,
+    borderColor: theme.colors.light.border,
+    borderRadius: 12,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
+    paddingVertical: 0,
+    color: theme.colors.text.richBlack,
+  },
+  resetButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: theme.colors.accent.successGreen,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   listContainer: {
     padding: theme.spacing.lg,

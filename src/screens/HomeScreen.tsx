@@ -146,7 +146,7 @@ const createStyles = (theme: Theme) =>
   scrollContent: {
     flexGrow: 1,
     paddingTop: theme.spacing.lg,
-    paddingBottom: 100, // Padding for bottom navigation clearance
+    paddingBottom: theme.spacing.lg,
   },
   welcomeSection: {
     paddingHorizontal: theme.spacing.xl,
