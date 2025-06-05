@@ -109,7 +109,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     const worstPlayerIndex = players.findIndex(p => p.id === playersWithGames[playersWithGames.length - 1].id);
     
     if (index === bestPlayerIndex) {
-      return { text: 'The Goat 🐐', color: theme.colors.accent.successGreen, opacity: 0.3 };
+      return { text: 'Champ 👑', color: theme.colors.accent.successGreen, opacity: 0.3 };
     }
     
     if (index === worstPlayerIndex && playersWithGames.length > 1) {
@@ -200,15 +200,15 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
             />
             <View style={isTablet ? styles.playerInfoTablet : styles.playerInfo}>
               <View style={styles.nameContainer}>
+                {badge && (
+                  <View style={[styles.badge, { backgroundColor: badge.color }]}>
+                    <Text style={styles.badgeText}>{badge.text}</Text>
+                  </View>
+                )}
                 <View style={styles.nameRow}>
                   <Text style={isTablet ? styles.playerNameTablet : styles.playerName}>
                     {item.name}
                   </Text>
-                  {badge && (
-                    <View style={[styles.badge, { backgroundColor: badge.color }]}>
-                      <Text style={styles.badgeText}>{badge.text}</Text>
-                    </View>
-                  )}
                 </View>
               </View>
               {item.nickname && (
@@ -468,8 +468,8 @@ const createStyles = (theme: Theme) =>
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
-    marginLeft: theme.spacing.sm,
-    marginTop: 0,
+    marginBottom: theme.spacing.xs,
+    alignSelf: 'flex-start',
   },
   badgeText: {
     ...theme.textStyles.caption,
