@@ -190,7 +190,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>Group Name</Text>
           <CustomTextInput
             value={groupName}
@@ -200,7 +200,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
           />
         </Card>
 
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>
             Select Players ({selectedPlayers.length} selected)
           </Text>

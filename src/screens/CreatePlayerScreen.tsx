@@ -211,7 +211,7 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={isTablet ? styles.contentTablet : styles.content}>
-        <Card padding={isTablet ? "2xl" : "lg"} style={isTablet ? styles.formTablet : styles.form}>
+        <Card variant="outlined" padding={isTablet ? "2xl" : "lg"} style={isTablet ? styles.formTablet : styles.form}>
           {/* Profile Picture Section */}
           <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
             <Text style={isTablet ? styles.labelTablet : styles.label}>Profile Picture</Text>

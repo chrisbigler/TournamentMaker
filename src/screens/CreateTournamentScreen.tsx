@@ -200,7 +200,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>Tournament Name</Text>
           <TextInput
             value={tournamentName}
@@ -210,7 +210,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
           />
         </Card>
 
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>Team Creation Mode</Text>
           {teamModeOptions.map((option) => (
             <TouchableOpacity
@@ -246,7 +246,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
           ))}
         </Card>
 
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitleInContainer}>Player Groups (Optional)</Text>
             {selectedGroup && (
@@ -306,7 +306,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </Card>
 
-        <Card padding="lg" style={styles.section}>
+        <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>
             Select Players ({selectedPlayers.length} selected)
           </Text>

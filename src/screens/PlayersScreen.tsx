@@ -183,7 +183,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     const badge = getBadgeForPlayer(item, index);
     
     return (
-      <Card style={isTablet ? styles.playerCardTablet : styles.playerCard}>
+      <Card variant="outlined" style={isTablet ? styles.playerCardTablet : styles.playerCard}>
         <TouchableOpacity
           style={isTablet ? styles.playerContentTablet : styles.playerContent}
           onPress={() => navigation.navigate('CreatePlayer', { player: item })}
@@ -348,14 +348,14 @@ const createStyles = (theme: Theme) =>
   StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.pureWhite,
+    backgroundColor: theme.colors.background.coolGray,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.background.coolGray,
+    backgroundColor: theme.colors.background.pureWhite,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.light.border,
     ...theme.shadows.card,

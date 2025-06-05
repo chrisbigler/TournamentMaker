@@ -193,7 +193,7 @@ const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Bye Match Content */}
         <View style={styles.content}>
-          <Card style={styles.byeCard}>
+          <Card variant="outlined" style={styles.byeCard}>
             <MaterialIcons 
               name="trending-up" 
               size={64} 
@@ -251,7 +251,7 @@ const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
           {/* Score Section */}
           <View style={[styles.scoreSection, isTablet && styles.scoreSectionTablet]}>
             {/* Team 1 Score */}
-            <Card style={isTablet ? { ...styles.scoreCard, ...styles.scoreCardTablet } : styles.scoreCard}>
+            <Card variant="outlined" style={isTablet ? { ...styles.scoreCard, ...styles.scoreCardTablet } : styles.scoreCard}>
               <View style={styles.teamInfo}>
                 <Text style={isTablet ? { ...styles.teamName, ...styles.teamNameTablet } : styles.teamName}>
                   {match.team1.teamName}
@@ -301,7 +301,7 @@ const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
             </Card>
 
             {/* Team 2 Score - Always rendered for normal matches */}
-            <Card style={isTablet ? { ...styles.scoreCard, ...styles.scoreCardTablet } : styles.scoreCard}>
+            <Card variant="outlined" style={isTablet ? { ...styles.scoreCard, ...styles.scoreCardTablet } : styles.scoreCard}>
               <View style={styles.teamInfo}>
                 <Text style={isTablet ? { ...styles.teamName, ...styles.teamNameTablet } : styles.teamName}>
                   {match.team2?.teamName}
