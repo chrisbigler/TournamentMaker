@@ -7,6 +7,7 @@ import { useTheme } from '../theme';
 import { useThemeMode } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import ThemeToggle from '../components/ThemeToggle';
+import { TouchableOpacity, View } from 'react-native';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
@@ -194,6 +195,34 @@ const HistoryStack = () => {
 
 const BottomTabNavigator = () => {
   const theme = useTheme();
+
+  // Custom plus button component
+  const CreateTournamentButton = ({ onPress }: { onPress: () => void }) => (
+    <TouchableOpacity
+      style={{
+        top: -15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: theme.colors.accent.successGreen,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
+      }}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <MaterialIcons name="add" size={32} color={theme.colors.text.white} />
+    </TouchableOpacity>
+  );
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -233,6 +262,25 @@ const BottomTabNavigator = () => {
           <MaterialIcons name="people" size={size} color={color} />
         ),
       }}
+    />
+    <Tab.Screen
+      name="CreateTournamentTab"
+      component={HomeStack} // We'll navigate to CreateTournament from this
+      options={({ navigation }) => ({
+        tabBarLabel: '',
+        tabBarIcon: () => (
+          <CreateTournamentButton 
+            onPress={() => navigation.navigate('Home', { 
+              screen: 'CreateTournament' 
+            })} 
+          />
+        ),
+        tabBarButton: (props) => (
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            {props.children}
+          </View>
+        ),
+      })}
     />
     <Tab.Screen
       name="PlayerGroups"

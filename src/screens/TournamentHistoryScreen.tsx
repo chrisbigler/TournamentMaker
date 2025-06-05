@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  TextInput,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -24,6 +25,8 @@ interface Props {
 
 const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
 
@@ -36,6 +39,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
         (a: Tournament, b: Tournament) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setTournaments(sortedTournaments);
+      setFilteredTournaments(sortedTournaments);
     } catch (error) {
       console.error('Error loading tournament history:', error);
       Alert.alert('Error', 'Failed to load tournament history');
@@ -43,6 +47,18 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(false);
     }
   }, []);
+
+  // Filter tournaments based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredTournaments(tournaments);
+    } else {
+      const filtered = tournaments.filter(tournament =>
+        tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredTournaments(filtered);
+    }
+  }, [searchQuery, tournaments]);
 
   useFocusEffect(
     useCallback(() => {
@@ -120,6 +136,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
               setLoading(true);
               await DatabaseService.clearAllTournaments();
               await loadTournamentHistory(); // Refresh the list
+              setSearchQuery(''); // Clear search query
               Alert.alert('Success', 'All tournament history has been cleared.');
             } catch (error) {
               console.error('Error clearing tournaments:', error);
@@ -132,6 +149,48 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
       ]
     );
   };
+
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <View style={[styles.searchContainer, { backgroundColor: theme.colors.background.pureWhite, borderColor: theme.colors.light.border }]}>
+        <MaterialIcons 
+          name="search" 
+          size={20} 
+          color={theme.colors.text.mediumGray} 
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={[styles.searchInput, { color: theme.colors.text.richBlack }]}
+          placeholder="Search tournaments..."
+          placeholderTextColor={theme.colors.text.mediumGray}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchQuery('')}
+            style={styles.clearButton}
+          >
+            <MaterialIcons 
+              name="clear" 
+              size={20} 
+              color={theme.colors.text.mediumGray}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+      
+      <TouchableOpacity
+        style={[styles.deleteButton, { backgroundColor: theme.colors.accent.errorRed }]}
+        onPress={clearAllTournaments}
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="delete" size={20} color={theme.colors.background.pureWhite} />
+      </TouchableOpacity>
+    </View>
+  );
 
   const renderTournamentItem = ({ item }: { item: Tournament }) => {
     return (
@@ -191,16 +250,23 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <MaterialIcons name="history" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
-      <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>No Tournament History</Text>
-      <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
-        Create your first tournament to see it appear here!
+      <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>
+        {searchQuery ? 'No tournaments found' : 'No Tournament History'}
       </Text>
-      <Button
-        title="Create Tournament"
-        onPress={() => navigation.navigate('CreateTournament')}
-        variant="primary"
-        size="md"
-      />
+      <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
+        {searchQuery 
+          ? `No tournaments match "${searchQuery}"`
+          : 'Create your first tournament to see it appear here!'
+        }
+      </Text>
+      {!searchQuery && (
+        <Button
+          title="Create Tournament"
+          onPress={() => navigation.navigate('CreateTournament')}
+          variant="primary"
+          size="md"
+        />
+      )}
     </View>
   );
 
@@ -216,22 +282,15 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background.coolGray }]}>
+      {renderHeader()}
       <FlatList
-        data={tournaments}
+        data={filteredTournaments}
         renderItem={renderTournamentItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={tournaments.length === 0 ? styles.emptyContainer : styles.listContainer}
+        contentContainerStyle={filteredTournaments.length === 0 ? styles.emptyContainer : styles.listContainer}
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
       />
-      
-      {/* Dev Button - Floating trash button */}
-      <TouchableOpacity
-        style={[styles.devButton, { backgroundColor: theme.colors.accent.errorRed }]}
-        onPress={clearAllTournaments}
-        activeOpacity={0.8}>
-        <MaterialIcons name="delete" size={24} color={theme.colors.background.pureWhite} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -239,6 +298,50 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    gap: 12,
+    alignItems: 'center',
+  },
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  deleteButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   loadingContainer: {
     flex: 1,
@@ -250,6 +353,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
+    paddingTop: 8,
   },
   emptyContainer: {
     flexGrow: 1,
@@ -339,24 +443,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
-  },
-  devButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
   },
 });
 
