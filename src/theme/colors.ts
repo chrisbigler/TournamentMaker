@@ -1,33 +1,33 @@
 export const colors = {
-  // Core Brand Colors (ChatGPT Aesthetic)
+  // Core Brand Colors (Professional Design)
   primary: {
-    deepNavy: '#202123',        // Primary brand, headers
-    electricBlue: '#4082c9',    // Primary actions, CTAs
-    slateGray: '#40414F',       // Secondary elements
+    deepNavy: '#0F172A',        // Primary brand, headers - from migration guide
+    electricBlue: '#3B82F6',    // Primary actions, CTAs - from migration guide
+    slateGray: '#475569',       // Secondary elements - from migration guide
   },
   
-  // Background Colors
+  // Background Colors (Professional Light Theme)
   background: {
-    pureWhite: '#343541',       // Main background
-    coolGray: '#444654',        // Card backgrounds
-    lightGray: '#202123',       // Section dividers
+    pureWhite: '#FFFFFF',       // Main background - from migration guide
+    coolGray: '#F8FAFC',        // Card backgrounds - from migration guide
+    lightGray: '#F1F5F9',       // Section dividers - from migration guide
   },
   
-  // Text Colors
+  // Text Colors (Professional Design)
   text: {
-    richBlack: '#ECECF1',       // Primary text
-    darkGray: '#C5C5D2',        // Secondary text
-    mediumGray: '#8E8EA0',      // Placeholder text
-    lightGray: '#6B6B7B',       // Disabled text
+    richBlack: '#0F172A',       // Primary text - from migration guide
+    darkGray: '#334155',        // Secondary text - from migration guide
+    mediumGray: '#64748B',      // Placeholder text - from migration guide
+    lightGray: '#94A3B8',       // Disabled text - from migration guide
     white: '#FFFFFF',           // White text for dark backgrounds
   },
   
-  // Accent Colors
+  // Accent Colors (Professional Design)
   accent: {
-    successGreen: '#10B981',    // Success states
-    warningOrange: '#F59E0B',   // Warnings
-    errorRed: '#EF4444',        // Errors
-    infoBlue: '#0EA5E9',        // Information
+    successGreen: '#10B981',    // Success states - from migration guide
+    warningOrange: '#F59E0B',   // Warnings - from migration guide
+    errorRed: '#EF4444',        // Errors - from migration guide
+    infoBlue: '#0EA5E9',        // Information - from migration guide
   },
   
   // Legacy colors (kept for backward compatibility during transition)
@@ -41,49 +41,49 @@ export const colors = {
     charcoal: '#3A3A37',
   },
   
-  // Light mode theme (ChatGPT style)
+  // Light mode theme (Professional style)
   light: {
     background: '#FFFFFF',
     surface: '#FFFFFF',
-    card: '#F7F7F8',
+    card: '#F8FAFC',
     text: {
-      primary: '#202123',
-      secondary: '#40414F',
-      tertiary: '#6B6B7B',
-      disabled: '#8E8EA0',
+      primary: '#0F172A',
+      secondary: '#334155',
+      tertiary: '#64748B',
+      disabled: '#94A3B8',
       inverse: '#FFFFFF',
     },
-    border: '#E5E5E5',
-    notification: '#10A37F',
-    primary: '#10A37F',
-    secondary: '#40414F',
+    border: '#E2E8F0',
+    notification: '#3B82F6',
+    primary: '#3B82F6',
+    secondary: '#475569',
   },
   
-  // Dark mode theme (ChatGPT style)
+  // Dark mode theme (Professional style)
   dark: {
-    background: '#343541',
-    surface: '#202123',
-    card: '#444654',
+    background: '#0F172A',
+    surface: '#1E293B',
+    card: '#334155',
     text: {
-      primary: '#ECECF1',
-      secondary: '#C5C5D2',
-      tertiary: '#8E8EA0',
-      disabled: '#6B6B7B',
-      inverse: '#202123',
+      primary: '#F8FAFC',
+      secondary: '#E2E8F0',
+      tertiary: '#94A3B8',
+      disabled: '#64748B',
+      inverse: '#0F172A',
     },
-    border: '#40414F',
-    notification: '#10A37F',
-    primary: '#10A37F',
-    secondary: '#C5C5D2',
+    border: '#475569',
+    notification: '#3B82F6',
+    primary: '#3B82F6',
+    secondary: '#E2E8F0',
   },
 } as const;
 
 export const gradients = {
-  // Updated gradients for ChatGPT look
-  primaryBlue: ['#10A37F', '#0E8F6E'],
-  navy: ['#202123', '#343541'],
-  navyGradient: ['#202123', '#343541', '#444654'], // Deep gray gradient
-  coolGray: ['#343541', '#444654'],
+  // Professional gradients
+  primaryBlue: ['#3B82F6', '#2563EB'],        // Electric blue gradient
+  navy: ['#0F172A', '#1E293B'],               // Deep navy gradient
+  navyGradient: ['#0F172A', '#1E293B', '#334155'], // Professional navy gradient
+  coolGray: ['#F8FAFC', '#F1F5F9'],           // Cool gray gradient
   
   // Legacy gradients (for backward compatibility)
   sunbeam: ['#F7C548', '#E6B439'],

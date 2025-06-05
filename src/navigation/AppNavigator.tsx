@@ -206,7 +206,7 @@ const BottomTabNavigator = () => {
         width: 70,
         height: 70,
         borderRadius: 35,
-        backgroundColor: theme.colors.accent.successGreen,
+        backgroundColor: theme.colors.primary.electricBlue,
         shadowColor: '#000',
         shadowOffset: {
           width: 0,

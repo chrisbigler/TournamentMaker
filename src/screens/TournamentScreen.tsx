@@ -249,7 +249,7 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Card variant="default" padding="lg" style={styles.headerCard}>
+        <Card variant="outlined" padding="lg" style={styles.headerCard}>
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
               <Text style={styles.tournamentName}>{tournament.name}</Text>
