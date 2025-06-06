@@ -249,7 +249,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MaterialIcons name="history" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
+      <MaterialIcons name="history" size={64} color={theme.colors.accent.warningOrange} style={styles.emptyIcon} />
       <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>
         {searchQuery ? 'No tournaments found' : 'No Tournament History'}
       </Text>
@@ -263,7 +263,7 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
         <Button
           title="Create Tournament"
           onPress={() => navigation.navigate('CreateTournament')}
-          variant="primary"
+          variant="secondary"
           size="md"
         />
       )}

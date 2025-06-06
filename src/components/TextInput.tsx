@@ -65,7 +65,7 @@ const createStyles = (theme: Theme) =>
   },
   outlined: {
     backgroundColor: 'transparent',
-    borderColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.primary.slateGray,
     borderWidth: 2,
   },
   error: {

@@ -13,7 +13,7 @@ import type { Theme } from '../theme';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
@@ -52,12 +52,14 @@ const Button: React.FC<ButtonProps> = ({
   const getLoadingColor = () => {
     switch (variant) {
       case 'primary':
-        return theme.colors.text.white;
       case 'secondary':
+      case 'tertiary':
+      case 'destructive':
+        return theme.colors.text.white;
       case 'outline':
-        return theme.colors.primary.electricBlue;
+        return theme.colors.action.primary;
       case 'ghost':
-        return theme.colors.primary.slateGray;
+        return theme.colors.action.neutral;
       default:
         return theme.colors.text.white;
     }
@@ -92,15 +94,21 @@ const createStyles = (theme: Theme) =>
     minHeight: theme.dimensions.touchableMinSize,
   },
   
-  // Variants - Updated for professional design
+  // Variants - Updated for varied professional design
   primary: {
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.action.primary, // Blue for primary actions
     ...theme.shadows.card,
   },
   secondary: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
+    backgroundColor: theme.colors.action.secondary, // Green for secondary actions
+    ...theme.shadows.card,
+  },
+  tertiary: {
+    backgroundColor: theme.colors.action.tertiary, // Orange for tertiary actions
+    ...theme.shadows.card,
+  },
+  destructive: {
+    backgroundColor: theme.colors.action.destructive, // Red for destructive actions
     ...theme.shadows.card,
   },
   ghost: {
@@ -109,7 +117,7 @@ const createStyles = (theme: Theme) =>
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.action.neutral,
   },
   
   // Sizes
@@ -131,7 +139,7 @@ const createStyles = (theme: Theme) =>
     opacity: 0.5,
   },
   
-  // Text styles - Updated for professional design
+  // Text styles - Updated for varied professional design
   text: {
     fontWeight: theme.textStyles.button.fontWeight,
     letterSpacing: theme.textStyles.button.letterSpacing,
@@ -140,13 +148,19 @@ const createStyles = (theme: Theme) =>
     color: theme.colors.text.white,
   },
   secondaryText: {
-    color: theme.colors.primary.electricBlue,
+    color: theme.colors.text.white,
+  },
+  tertiaryText: {
+    color: theme.colors.text.white,
+  },
+  destructiveText: {
+    color: theme.colors.text.white,
   },
   ghostText: {
-    color: theme.colors.primary.slateGray,
+    color: theme.colors.action.neutral,
   },
   outlineText: {
-    color: theme.colors.primary.electricBlue,
+    color: theme.colors.action.neutral,
   },
   disabledText: {
     opacity: 0.7,

@@ -374,10 +374,10 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background.pureWhite,
     },
     modeOptionSelected: {
-      backgroundColor: `${theme.colors.primary.electricBlue}15`, // 15% opacity
-      borderColor: theme.colors.primary.electricBlue,
+      backgroundColor: `${theme.colors.selection.secondary}15`, // 15% opacity
+      borderColor: theme.colors.selection.secondary,
       borderWidth: 2,
-      shadowColor: theme.colors.primary.electricBlue,
+      shadowColor: theme.colors.selection.secondary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -414,13 +414,13 @@ const createStyles = (theme: Theme) =>
       backgroundColor: 'transparent',
     },
     radioButtonSelectedContainer: {
-      borderColor: theme.colors.primary.electricBlue,
+      borderColor: theme.colors.selection.secondary,
     },
     radioButtonSelected: {
       width: 12,
       height: 12,
       borderRadius: 6,
-      backgroundColor: theme.colors.primary.electricBlue,
+      backgroundColor: theme.colors.selection.secondary,
     },
     playerCard: {
       flexDirection: 'row',

@@ -66,7 +66,7 @@ const createStyles = (theme: Theme) =>
     ...theme.shadows.card,
   },
   primary: {
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.action.secondary,
   },
   secondary: {
     backgroundColor: theme.colors.primary.deepNavy,

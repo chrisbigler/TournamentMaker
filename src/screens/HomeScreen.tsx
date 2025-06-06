@@ -61,7 +61,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <MaterialIcons 
               name="lightbulb" 
               size={40} 
-              color={theme.colors.primary.electricBlue} 
+              color={theme.colors.accent.warningOrange} 
             />
             <View style={styles.tipContent}>
               <Text style={styles.tipTitle}>Pro Tip</Text>
@@ -211,7 +211,7 @@ const createStyles = (theme: Theme) =>
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary.electricBlue,
+    backgroundColor: theme.colors.action.secondary,
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.borderRadius.xl,

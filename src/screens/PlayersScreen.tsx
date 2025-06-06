@@ -241,7 +241,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       // Empty state for search with no results
       return (
         <View style={styles.emptyState}>
-          <MaterialIcons name="search-off" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
+          <MaterialIcons name="search-off" size={64} color={theme.colors.accent.warningOrange} style={styles.emptyIcon} />
           <Text style={styles.emptyStateTitle}>No Players Found</Text>
           <Text style={styles.emptyStateText}>
             Try adjusting your search or add a new player
@@ -259,7 +259,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     // Empty state for no players at all
     return (
       <View style={styles.emptyState}>
-        <MaterialIcons name="person-add" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
+        <MaterialIcons name="person-add" size={64} color={theme.colors.action.secondary} style={styles.emptyIcon} />
         <Text style={styles.emptyStateTitle}>No Players Yet</Text>
         <Text style={styles.emptyStateText}>
           Add your first player to get started with tournaments
@@ -267,7 +267,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         <Button
           title="Add First Player"
           onPress={() => navigation.navigate('CreatePlayer', {})}
-          variant="primary"
+          variant="secondary"
           style={styles.emptyStateButton}
         />
       </View>
@@ -324,7 +324,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator 
             size="large" 
-            color={theme.colors.primary.electricBlue} 
+            color={theme.colors.action.secondary} 
           />
           <Text style={styles.loadingText}>
             {fixingStats ? 'Resetting player statistics...' : 'Loading players...'}
