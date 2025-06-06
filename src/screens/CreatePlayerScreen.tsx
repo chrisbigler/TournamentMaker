@@ -411,12 +411,12 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background.pureWhite,
     },
     genderOptionSelected: {
-      backgroundColor: theme.colors.primary.electricBlue,
-      borderColor: theme.colors.primary.electricBlue,
+      backgroundColor: theme.colors.selection.primary,
+      borderColor: theme.colors.selection.primary,
     },
     genderOptionSelectedTablet: {
-      backgroundColor: theme.colors.primary.electricBlue,
-      borderColor: theme.colors.primary.electricBlue,
+      backgroundColor: theme.colors.selection.primary,
+      borderColor: theme.colors.selection.primary,
     },
     genderOptionText: {
       ...theme.textStyles.bodySmall,

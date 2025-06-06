@@ -4,6 +4,8 @@ export const colors = {
     deepNavy: '#0F172A',        // Primary brand, headers - from migration guide
     electricBlue: '#3B82F6',    // Primary actions, CTAs - from migration guide
     slateGray: '#475569',       // Secondary elements - from migration guide
+    forestGreen: '#059669',     // Success actions, confirmations
+    warmOrange: '#EA580C',      // Warning actions, important buttons
   },
   
   // Background Colors (Professional Light Theme)
@@ -22,12 +24,30 @@ export const colors = {
     white: '#FFFFFF',           // White text for dark backgrounds
   },
   
+  // Action Colors (Varied Professional Design)
+  action: {
+    primary: '#3B82F6',         // Primary actions (create, start)
+    secondary: '#059669',       // Secondary actions (save, confirm)
+    tertiary: '#EA580C',        // Tertiary actions (edit, modify)
+    destructive: '#EF4444',     // Destructive actions (delete, reset)
+    neutral: '#475569',         // Neutral actions (cancel, back)
+  },
+  
   // Accent Colors (Professional Design)
   accent: {
     successGreen: '#10B981',    // Success states - from migration guide
     warningOrange: '#F59E0B',   // Warnings - from migration guide
     errorRed: '#EF4444',        // Errors - from migration guide
     infoBlue: '#0EA5E9',        // Information - from migration guide
+    purpleAccent: '#8B5CF6',    // Special features, premium
+  },
+  
+  // Selection States (Varied Colors)
+  selection: {
+    primary: '#059669',         // Primary selections (players, teams)
+    secondary: '#8B5CF6',       // Secondary selections (modes, options)
+    active: '#EA580C',          // Active states (current match, playing)
+    highlight: '#F59E0B',       // Highlights (achievements, special)
   },
   
   // Legacy colors (kept for backward compatibility during transition)
@@ -81,6 +101,8 @@ export const colors = {
 export const gradients = {
   // Professional gradients
   primaryBlue: ['#3B82F6', '#2563EB'],        // Electric blue gradient
+  forestGreen: ['#059669', '#047857'],        // Forest green gradient
+  warmOrange: ['#EA580C', '#DC2626'],         // Warm orange gradient
   navy: ['#0F172A', '#1E293B'],               // Deep navy gradient
   navyGradient: ['#0F172A', '#1E293B', '#334155'], // Professional navy gradient
   coolGray: ['#F8FAFC', '#F1F5F9'],           // Cool gray gradient

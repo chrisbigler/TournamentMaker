@@ -206,7 +206,7 @@ const BottomTabNavigator = () => {
         width: 70,
         height: 70,
         borderRadius: 35,
-        backgroundColor: theme.colors.primary.electricBlue,
+        backgroundColor: theme.colors.action.secondary,
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
@@ -236,7 +236,7 @@ const BottomTabNavigator = () => {
           height: 88,
           ...theme.shadows.card,
         },
-        tabBarActiveTintColor: theme.colors.primary.electricBlue,
+        tabBarActiveTintColor: theme.colors.accent.infoBlue,
         tabBarInactiveTintColor: theme.colors.text.mediumGray,
         tabBarLabelStyle: {
           fontSize: 12,

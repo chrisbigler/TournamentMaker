@@ -511,7 +511,7 @@ const createStyles = (theme: Theme) =>
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.primary.electricBlue,
+    borderColor: theme.colors.primary.slateGray,
     elevation: 2,
   },
   scoreDisplayTablet: {
@@ -522,7 +522,7 @@ const createStyles = (theme: Theme) =>
   },
   scoreText: {
     ...theme.textStyles.h1,
-    color: theme.colors.primary.electricBlue,
+    color: theme.colors.text.richBlack,
     fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: theme.textStyles.h1.fontSize * 1.1,

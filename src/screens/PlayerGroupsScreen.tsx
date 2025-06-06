@@ -75,7 +75,7 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </View>
         <View style={styles.groupActions}>
-          <Text style={[styles.editText, { color: theme.colors.primary.electricBlue }]}>Edit</Text>
+          <Text style={[styles.editText, { color: theme.colors.action.tertiary }]}>Edit</Text>
         </View>
       </Card>
     </TouchableOpacity>
