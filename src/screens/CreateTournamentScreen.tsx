@@ -27,6 +27,7 @@ interface Props {
 
 const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
   const [tournamentName, setTournamentName] = useState('');
+  const [buyIn, setBuyIn] = useState('');
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   const [teamMode, setTeamMode] = useState<TeamCreationMode>(TeamCreationMode.MANUAL);
@@ -125,7 +126,8 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
       const tournamentId = await TournamentService.createTournament(
         tournamentName.trim(),
         selectedPlayers,
-        teamMode
+        teamMode,
+        parseFloat(buyIn) || 0
       );
 
       Alert.alert(
@@ -207,6 +209,16 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setTournamentName}
             placeholder="Enter tournament name"
             autoCapitalize="words"
+          />
+        </Card>
+
+        <Card variant="outlined" padding="lg" style={styles.section}>
+          <Text style={styles.sectionTitle}>Buy In Amount</Text>
+          <TextInput
+            value={buyIn}
+            onChangeText={setBuyIn}
+            placeholder="Enter buy in amount"
+            keyboardType="numeric"
           />
         </Card>
 

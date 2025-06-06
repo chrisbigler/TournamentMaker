@@ -50,6 +50,8 @@ export interface Tournament {
   matches: Match[];
   status: TournamentStatus;
   currentRound: number;
+  buyIn: number;
+  pot: number;
   winner?: Team;
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +136,8 @@ export interface DatabaseTournament {
   status: string;
   current_round: number;
   winner_id: string | null;
+  buy_in: number;
+  pot: number;
   created_at: string;
   updated_at: string;
 }

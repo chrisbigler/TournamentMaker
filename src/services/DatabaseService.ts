@@ -66,6 +66,8 @@ class DatabaseService {
         name TEXT NOT NULL,
         status TEXT NOT NULL,
         current_round INTEGER DEFAULT 1,
+        buy_in REAL DEFAULT 0,
+        pot REAL DEFAULT 0,
         winner_id TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
@@ -153,13 +155,34 @@ class DatabaseService {
       // Migration 2: Add profile_picture to players table if it doesn't exist
       const playersInfo = this.database.getAllSync("PRAGMA table_info(players);") as Array<{ name: string }>;
       const hasProfilePictureColumn = playersInfo.some((col) => col.name === 'profile_picture');
-      
+
       if (!hasProfilePictureColumn) {
         console.log('Adding profile_picture column to players table...');
         this.database.execSync('ALTER TABLE players ADD COLUMN profile_picture TEXT;');
         console.log('Successfully added profile_picture column to players table');
       } else {
         console.log('profile_picture column already exists in players table');
+      }
+
+      // Migration 3: Add buy_in and pot columns to tournaments table if they don't exist
+      const tournamentsInfo = this.database.getAllSync("PRAGMA table_info(tournaments);") as Array<{ name: string }>;
+      const hasBuyInColumn = tournamentsInfo.some((col) => col.name === 'buy_in');
+      const hasPotColumn = tournamentsInfo.some((col) => col.name === 'pot');
+
+      if (!hasBuyInColumn) {
+        console.log('Adding buy_in column to tournaments table...');
+        this.database.execSync('ALTER TABLE tournaments ADD COLUMN buy_in REAL DEFAULT 0;');
+        console.log('Successfully added buy_in column to tournaments table');
+      } else {
+        console.log('buy_in column already exists in tournaments table');
+      }
+
+      if (!hasPotColumn) {
+        console.log('Adding pot column to tournaments table...');
+        this.database.execSync('ALTER TABLE tournaments ADD COLUMN pot REAL DEFAULT 0;');
+        console.log('Successfully added pot column to tournaments table');
+      } else {
+        console.log('pot column already exists in tournaments table');
       }
       
       console.log('Database migrations completed successfully');
@@ -454,6 +477,8 @@ class DatabaseService {
     name: string;
     status: TournamentStatus;
     currentRound: number;
+    buyIn: number;
+    pot: number;
     winner?: Team;
   }): Promise<string> {
     if (!this.database) throw new Error('Database not initialized');
@@ -463,8 +488,8 @@ class DatabaseService {
 
     try {
       this.database.runSync(
-        'INSERT INTO tournaments (id, name, status, current_round, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [id, tournament.name, tournament.status, tournament.currentRound, now, now]
+        'INSERT INTO tournaments (id, name, status, current_round, buy_in, pot, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [id, tournament.name, tournament.status, tournament.currentRound, tournament.buyIn, tournament.pot, now, now]
       );
       return id;
     } catch (error) {
@@ -497,6 +522,8 @@ class DatabaseService {
         matches,
         status: row.status as TournamentStatus,
         currentRound: row.current_round,
+        buyIn: row.buy_in,
+        pot: row.pot,
         winner: row.winner_id ? teams.find(t => t.id === row.winner_id) : undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
@@ -529,6 +556,8 @@ class DatabaseService {
           matches,
           status: row.status as TournamentStatus,
           currentRound: row.current_round,
+          buyIn: row.buy_in,
+          pot: row.pot,
           winner: row.winner_id ? teams.find(t => t.id === row.winner_id) : undefined,
           createdAt: new Date(row.created_at),
           updatedAt: new Date(row.updated_at),
@@ -547,6 +576,8 @@ class DatabaseService {
     status?: TournamentStatus;
     currentRound?: number;
     winnerId?: string;
+    buyIn?: number;
+    pot?: number;
   }): Promise<void> {
     if (!this.database) throw new Error('Database not initialized');
 
@@ -572,6 +603,14 @@ class DatabaseService {
       if (updates.winnerId !== undefined) {
         setClause.push('winner_id = ?');
         values.push(updates.winnerId);
+      }
+      if (updates.buyIn !== undefined) {
+        setClause.push('buy_in = ?');
+        values.push(updates.buyIn);
+      }
+      if (updates.pot !== undefined) {
+        setClause.push('pot = ?');
+        values.push(updates.pot);
       }
 
       setClause.push('updated_at = ?');
