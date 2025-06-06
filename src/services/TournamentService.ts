@@ -414,7 +414,8 @@ class TournamentService {
   async createTournament(
     name: string,
     players: Player[],
-    teamMode: TeamCreationMode
+    teamMode: TeamCreationMode,
+    buyIn: number
   ): Promise<string> {
     try {
       console.log('Creating tournament:', name, 'with', players.length, 'players');
@@ -428,10 +429,13 @@ class TournamentService {
       console.log('Generated matches:', matches.length, matches);
 
       // Create tournament in database
+      const pot = players.length * buyIn;
       const tournamentId = await DatabaseService.createTournament({
         name,
         status: TournamentStatus.SETUP,
         currentRound: 1,
+        buyIn,
+        pot,
         winner: undefined,
       });
       console.log('Created tournament with ID:', tournamentId);
@@ -651,11 +655,23 @@ class TournamentService {
   // Get tournament winner
   getTournamentWinner(matches: Match[]): Team | null {
     if (!this.isTournamentComplete(matches)) return null;
-    
+
     const finalRound = Math.max(...matches.map(m => m.round));
     const finalMatch = matches.find(m => m.round === finalRound && m.isComplete);
-    
+
     return finalMatch?.winner || null;
+  }
+
+  // Get tournament runner up (loser of final match)
+  getTournamentRunnerUp(matches: Match[]): Team | null {
+    if (!this.isTournamentComplete(matches)) return null;
+
+    const finalRound = Math.max(...matches.map(m => m.round));
+    const finalMatch = matches.find(m => m.round === finalRound && m.isComplete);
+
+    if (!finalMatch || !finalMatch.team2) return null;
+
+    return finalMatch.winner?.id === finalMatch.team1.id ? finalMatch.team2 : finalMatch.team1;
   }
 
   // Check if a given round is the championship round (final round with 2 teams)

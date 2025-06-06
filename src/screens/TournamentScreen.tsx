@@ -245,6 +245,9 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   console.log('Tournament matches passed to getBracketStructure:', tournament.matches?.length || 0);
   const isComplete = TournamentService.isTournamentComplete(tournament.matches);
   const winner = TournamentService.getTournamentWinner(tournament.matches);
+  const runnerUp = TournamentService.getTournamentRunnerUp(tournament.matches);
+  const firstPrize = tournament.pot * 0.7;
+  const secondPrize = tournament.pot * 0.3;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -273,6 +276,16 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
           <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
             <Text style={styles.winnerTitle}>🏆 Champion</Text>
             <Text style={styles.winnerName}>{winner.teamName}</Text>
+            {tournament.pot > 0 && (
+              <Text style={styles.payoutText}>Wins ${firstPrize.toFixed(2)}</Text>
+            )}
+          </Card>
+        )}
+        {isComplete && runnerUp && tournament.pot > 0 && (
+          <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
+            <Text style={styles.winnerTitle}>🥈 Runner Up</Text>
+            <Text style={styles.winnerName}>{runnerUp.teamName}</Text>
+            <Text style={styles.payoutText}>Wins ${secondPrize.toFixed(2)}</Text>
           </Card>
         )}
       </View>
@@ -345,6 +358,11 @@ const createStyles = (theme: Theme) =>
       ...theme.textStyles.bodyLarge,
       color: theme.colors.accent.warningOrange,
       fontWeight: theme.typography.fontWeights.semibold,
+    },
+    payoutText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.darkGray,
+      marginTop: theme.spacing.xs,
     },
     bracketContainer: {
       flex: 1,
