@@ -45,14 +45,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
 
-        {/* Welcome Message */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome back!</Text>
-          <Text style={styles.welcomeMessage}>
-            Ready to organize your next tournament? Use the navigation below to manage players, create groups, or view your tournament history.
-          </Text>
-        </View>
-        
         {/* Getting Started Section */}
         <View style={styles.tipsSection}>
           <Text style={styles.sectionTitle}>Getting Started</Text>
@@ -147,27 +139,6 @@ const createStyles = (theme: Theme) =>
     flexGrow: 1,
     paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
-  },
-  welcomeSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing['2xl'],
-    backgroundColor: theme.colors.background.pureWhite,
-    marginHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.card,
-  },
-  welcomeTitle: {
-    ...theme.textStyles.h2,
-    color: theme.colors.text.darkGray,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  welcomeMessage: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.mediumGray,
-    textAlign: 'center',
-    lineHeight: 22,
   },
   tipsSection: {
     paddingHorizontal: theme.spacing.xl,
