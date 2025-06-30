@@ -16,6 +16,7 @@ import DatabaseService from '../services/DatabaseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { Button, Card } from '../components';
+import { formatCurrency } from '../utils';
 
 type TournamentHistoryNavigationProp = StackNavigationProp<RootStackParamList, 'TournamentHistory'>;
 
@@ -240,6 +241,14 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
                 <MaterialIcons name="timer" size={16} color={theme.colors.text.lightGray} />
                 <Text style={[styles.statText, { color: theme.colors.text.lightGray }]}>Round: {item.currentRound}</Text>
               </View>
+              {item.buyIn > 0 && (
+                <View style={styles.statItem}>
+                  <MaterialIcons name="attach-money" size={16} color={theme.colors.text.lightGray} />
+                  <Text style={[styles.statText, { color: theme.colors.text.lightGray }]}>
+                    Buy-in: {formatCurrency(item.buyIn)}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </Card>
@@ -416,6 +425,7 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 16,
   },
   statItem: {

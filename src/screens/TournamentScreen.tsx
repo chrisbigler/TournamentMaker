@@ -18,6 +18,7 @@ import TournamentService from '../services/TournamentService';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { Card, Button } from '../components';
+import { formatCurrency } from '../utils';
 
 type TournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Tournament'>;
 type TournamentScreenRouteProp = RouteProp<RootStackParamList, 'Tournament'>;
@@ -259,6 +260,11 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
               <Text style={styles.statusText}>
                 Status: {tournament.status} • Round {tournament.currentRound}
               </Text>
+              {tournament.buyIn > 0 && (
+                <Text style={styles.buyInText}>
+                  Buy-in: {formatCurrency(tournament.buyIn)} • Total Pot: {formatCurrency(tournament.pot)}
+                </Text>
+              )}
             </View>
             
             <Button
@@ -277,7 +283,7 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.winnerTitle}>🏆 Champion</Text>
             <Text style={styles.winnerName}>{winner.teamName}</Text>
             {tournament.pot > 0 && (
-              <Text style={styles.payoutText}>Wins ${firstPrize.toFixed(2)}</Text>
+              <Text style={styles.payoutText}>Wins {formatCurrency(firstPrize)}</Text>
             )}
           </Card>
         )}
@@ -285,7 +291,7 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
           <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
             <Text style={styles.winnerTitle}>🥈 Runner Up</Text>
             <Text style={styles.winnerName}>{runnerUp.teamName}</Text>
-            <Text style={styles.payoutText}>Wins ${secondPrize.toFixed(2)}</Text>
+            <Text style={styles.payoutText}>Wins {formatCurrency(secondPrize)}</Text>
           </Card>
         )}
       </View>
@@ -336,6 +342,11 @@ const createStyles = (theme: Theme) =>
     statusText: {
       ...theme.textStyles.bodySmall,
       color: theme.colors.text.darkGray,
+    },
+    buyInText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.mediumGray,
+      marginTop: theme.spacing.xs,
     },
     deleteButton: {
       backgroundColor: 'transparent',

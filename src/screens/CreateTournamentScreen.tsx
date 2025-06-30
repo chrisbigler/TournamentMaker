@@ -18,6 +18,7 @@ import TournamentService, { TeamCreationMode } from '../services/TournamentServi
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { Button, Card } from '../components';
+import { formatCurrencyInput, parseCurrency } from '../utils';
 
 type CreateTournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateTournament'>;
 
@@ -127,7 +128,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
         tournamentName.trim(),
         selectedPlayers,
         teamMode,
-        parseFloat(buyIn) || 0
+        parseCurrency(buyIn)
       );
 
       Alert.alert(
@@ -214,12 +215,16 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
 
         <Card variant="outlined" padding="lg" style={styles.section}>
           <Text style={styles.sectionTitle}>Buy In Amount</Text>
-          <TextInput
-            value={buyIn}
-            onChangeText={setBuyIn}
-            placeholder="Enter buy in amount"
-            keyboardType="numeric"
-          />
+          <View style={styles.currencyInputContainer}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <TextInput
+              style={styles.currencyInput}
+              value={buyIn}
+              onChangeText={(text) => setBuyIn(formatCurrencyInput(text))}
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+            />
+          </View>
         </Card>
 
         <Card variant="outlined" padding="lg" style={styles.section}>
@@ -374,6 +379,28 @@ const createStyles = (theme: Theme) =>
       ...theme.textStyles.h4,
       color: theme.colors.text.richBlack,
       marginBottom: theme.spacing.lg,
+    },
+    currencyInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.light.border,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.background.pureWhite,
+      paddingHorizontal: theme.spacing.md,
+    },
+    currencySymbol: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.darkGray,
+      marginRight: theme.spacing.xs,
+      fontWeight: theme.typography.fontWeights.medium,
+    },
+    currencyInput: {
+      flex: 1,
+      ...theme.textStyles.body,
+      color: theme.colors.text.richBlack,
+      paddingVertical: theme.spacing.md,
+      fontSize: 16,
     },
     modeOption: {
       flexDirection: 'row',
