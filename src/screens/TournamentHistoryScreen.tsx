@@ -268,8 +268,11 @@ const TournamentHistoryScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const createStyles = (theme: Theme) =>
-  StyleSheet.create({
+const createStyles = (theme: Theme) => {
+  const inputLineHeight = theme.textStyles.body.lineHeight;
+  const inputVerticalPadding = Math.round((40 - inputLineHeight) / 2);
+
+  return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background.primary,
@@ -300,7 +303,8 @@ const createStyles = (theme: Theme) =>
       flex: 1,
       ...theme.textStyles.body,
       height: '100%',
-      paddingVertical: 0,
+      paddingVertical: inputVerticalPadding,
+      lineHeight: inputLineHeight,
       color: theme.colors.text.primary,
     },
     clearButton: {
@@ -413,5 +417,6 @@ const createStyles = (theme: Theme) =>
       marginBottom: theme.spacing.xl,
     },
   });
+};
 
 export default TournamentHistoryScreen;

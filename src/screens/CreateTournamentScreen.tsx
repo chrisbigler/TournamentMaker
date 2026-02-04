@@ -436,8 +436,11 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const createStyles = (theme: Theme) =>
-  StyleSheet.create({
+const createStyles = (theme: Theme) => {
+  const inputLineHeight = theme.textStyles.body.lineHeight;
+  const inputVerticalPadding = Math.round((48 - inputLineHeight) / 2);
+
+  return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background.primary,
@@ -474,7 +477,9 @@ const createStyles = (theme: Theme) =>
       borderColor: theme.colors.border.default,
       borderRadius: theme.borderRadius.sm,
       paddingHorizontal: theme.spacing.md,
+      paddingVertical: inputVerticalPadding,
       height: 48,
+      lineHeight: inputLineHeight,
       textAlignVertical: 'center',
     },
     currencyInputContainer: {
@@ -496,7 +501,9 @@ const createStyles = (theme: Theme) =>
       ...theme.textStyles.body,
       color: theme.colors.text.primary,
       paddingLeft: theme.spacing.xs,
+      paddingVertical: inputVerticalPadding,
       height: '100%',
+      lineHeight: inputLineHeight,
       textAlignVertical: 'center',
     },
     modeOption: {
@@ -652,5 +659,6 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.text.secondary,
     },
   });
+};
 
 export default CreateTournamentScreen;

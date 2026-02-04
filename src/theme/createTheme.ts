@@ -6,6 +6,9 @@ export type ThemeMode = 'light' | 'dark';
 
 export const createTheme = (mode: ThemeMode) => {
   const palette = mode === 'light' ? baseColors.light : baseColors.dark;
+  const inputLineHeight = textStyles.body.lineHeight;
+  const inputHeight = dimensions.inputHeight.md;
+  const inputVerticalPadding = Math.round((inputHeight - inputLineHeight) / 2);
 
   // Build the colors object with both new and legacy mappings
   const colors = {
@@ -145,8 +148,11 @@ export const createTheme = (mode: ThemeMode) => {
         borderColor: palette.border.default,
         borderRadius: borderRadius.sm,
         height: dimensions.inputHeight.md,
+        paddingVertical: inputVerticalPadding,
         paddingHorizontal: spacing.md,
         fontSize: textStyles.body.fontSize,
+        lineHeight: inputLineHeight,
+        textAlignVertical: 'center',
       },
       inputFocused: {
         borderColor: baseColors.primary,
