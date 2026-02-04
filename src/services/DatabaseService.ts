@@ -174,6 +174,13 @@ class DatabaseService {
       if (!hasPotColumn) {
         this.database.execSync('ALTER TABLE tournaments ADD COLUMN pot REAL DEFAULT 0;');
       }
+
+      // Migration 4: Add total_winnings to players table if it doesn't exist
+      const hasTotalWinningsColumn = playersInfo.some((col) => col.name === 'total_winnings');
+
+      if (!hasTotalWinningsColumn) {
+        this.database.execSync('ALTER TABLE players ADD COLUMN total_winnings REAL DEFAULT 0;');
+      }
     } catch (error) {
       console.error('Failed to run migrations:', error);
       throw error;
@@ -189,13 +196,14 @@ class DatabaseService {
 
     try {
       this.database.runSync(
-        'INSERT INTO players (id, name, nickname, gender, wins, losses, profile_picture, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [id, player.name, player.nickname || null, player.gender, player.wins, player.losses, player.profilePicture || null, now, now]
+        'INSERT INTO players (id, name, nickname, gender, wins, losses, total_winnings, profile_picture, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [id, player.name, player.nickname || null, player.gender, player.wins, player.losses, 0, player.profilePicture || null, now, now]
       );
-      
+
       return {
         id,
         ...player,
+        totalWinnings: 0,
         createdAt: new Date(now),
         updatedAt: new Date(now),
       };
@@ -218,6 +226,7 @@ class DatabaseService {
         gender: row.gender as Gender,
         wins: row.wins,
         losses: row.losses,
+        totalWinnings: row.total_winnings || 0,
         profilePicture: row.profile_picture || undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
@@ -232,7 +241,7 @@ class DatabaseService {
     if (!this.database) throw new Error('Database not initialized');
 
     const now = new Date().toISOString();
-    
+
     try {
       this.database.runSync(
         'UPDATE players SET wins = ?, losses = ?, updated_at = ? WHERE id = ?',
@@ -244,6 +253,38 @@ class DatabaseService {
     }
   }
 
+  async updatePlayerWinnings(playerId: string, amount: number): Promise<void> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    const now = new Date().toISOString();
+
+    try {
+      this.database.runSync(
+        'UPDATE players SET total_winnings = total_winnings + ?, updated_at = ? WHERE id = ?',
+        [amount, now, playerId]
+      );
+    } catch (error) {
+      console.error('Failed to update player winnings:', error);
+      throw error;
+    }
+  }
+
+  async setPlayerWinnings(playerId: string, amount: number): Promise<void> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    const now = new Date().toISOString();
+
+    try {
+      this.database.runSync(
+        'UPDATE players SET total_winnings = ?, updated_at = ? WHERE id = ?',
+        [amount, now, playerId]
+      );
+    } catch (error) {
+      console.error('Failed to set player winnings:', error);
+      throw error;
+    }
+  }
+
   async updatePlayer(playerId: string, player: Omit<Player, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
     if (!this.database) throw new Error('Database not initialized');
 
@@ -251,8 +292,8 @@ class DatabaseService {
 
     try {
       this.database.runSync(
-        'UPDATE players SET name = ?, nickname = ?, gender = ?, wins = ?, losses = ?, profile_picture = ?, updated_at = ? WHERE id = ?',
-        [player.name, player.nickname || null, player.gender, player.wins, player.losses, player.profilePicture || null, now, playerId]
+        'UPDATE players SET name = ?, nickname = ?, gender = ?, wins = ?, losses = ?, total_winnings = ?, profile_picture = ?, updated_at = ? WHERE id = ?',
+        [player.name, player.nickname || null, player.gender, player.wins, player.losses, player.totalWinnings, player.profilePicture || null, now, playerId]
       );
     } catch (error) {
       console.error('Failed to update player:', error);
@@ -296,8 +337,8 @@ class DatabaseService {
     try {
       const row = this.database.getFirstSync(
         `SELECT t.*, t.tournament_id,
-         p1.id as p1_id, p1.name as p1_name, p1.nickname as p1_nickname, p1.gender as p1_gender, p1.wins as p1_wins, p1.losses as p1_losses, p1.profile_picture as p1_profile_picture, p1.created_at as p1_created_at, p1.updated_at as p1_updated_at,
-         p2.id as p2_id, p2.name as p2_name, p2.nickname as p2_nickname, p2.gender as p2_gender, p2.wins as p2_wins, p2.losses as p2_losses, p2.profile_picture as p2_profile_picture, p2.created_at as p2_created_at, p2.updated_at as p2_updated_at
+         p1.id as p1_id, p1.name as p1_name, p1.nickname as p1_nickname, p1.gender as p1_gender, p1.wins as p1_wins, p1.losses as p1_losses, p1.total_winnings as p1_total_winnings, p1.profile_picture as p1_profile_picture, p1.created_at as p1_created_at, p1.updated_at as p1_updated_at,
+         p2.id as p2_id, p2.name as p2_name, p2.nickname as p2_nickname, p2.gender as p2_gender, p2.wins as p2_wins, p2.losses as p2_losses, p2.total_winnings as p2_total_winnings, p2.profile_picture as p2_profile_picture, p2.created_at as p2_created_at, p2.updated_at as p2_updated_at
          FROM teams t
          JOIN players p1 ON t.player1_id = p1.id
          JOIN players p2 ON t.player2_id = p2.id
@@ -319,6 +360,7 @@ class DatabaseService {
           gender: row.p1_gender as Gender,
           wins: row.p1_wins,
           losses: row.p1_losses,
+          totalWinnings: row.p1_total_winnings || 0,
           profilePicture: row.p1_profile_picture || undefined,
           createdAt: new Date(row.p1_created_at),
           updatedAt: new Date(row.p1_updated_at),
@@ -330,6 +372,7 @@ class DatabaseService {
           gender: row.p2_gender as Gender,
           wins: row.p2_wins,
           losses: row.p2_losses,
+          totalWinnings: row.p2_total_winnings || 0,
           profilePicture: row.p2_profile_picture || undefined,
           createdAt: new Date(row.p2_created_at),
           updatedAt: new Date(row.p2_updated_at),
@@ -667,11 +710,11 @@ class DatabaseService {
       // Single JOIN query to get all teams with player data
       const rows = this.database.getAllSync(
         `SELECT t.id, t.tournament_id, t.team_name, t.created_at,
-         p1.id as p1_id, p1.name as p1_name, p1.nickname as p1_nickname, p1.gender as p1_gender, 
-         p1.wins as p1_wins, p1.losses as p1_losses, p1.profile_picture as p1_profile_picture, 
+         p1.id as p1_id, p1.name as p1_name, p1.nickname as p1_nickname, p1.gender as p1_gender,
+         p1.wins as p1_wins, p1.losses as p1_losses, p1.total_winnings as p1_total_winnings, p1.profile_picture as p1_profile_picture,
          p1.created_at as p1_created_at, p1.updated_at as p1_updated_at,
-         p2.id as p2_id, p2.name as p2_name, p2.nickname as p2_nickname, p2.gender as p2_gender, 
-         p2.wins as p2_wins, p2.losses as p2_losses, p2.profile_picture as p2_profile_picture, 
+         p2.id as p2_id, p2.name as p2_name, p2.nickname as p2_nickname, p2.gender as p2_gender,
+         p2.wins as p2_wins, p2.losses as p2_losses, p2.total_winnings as p2_total_winnings, p2.profile_picture as p2_profile_picture,
          p2.created_at as p2_created_at, p2.updated_at as p2_updated_at
          FROM teams t
          JOIN players p1 ON t.player1_id = p1.id
@@ -691,6 +734,7 @@ class DatabaseService {
           gender: row.p1_gender as Gender,
           wins: row.p1_wins,
           losses: row.p1_losses,
+          totalWinnings: row.p1_total_winnings || 0,
           profilePicture: row.p1_profile_picture || undefined,
           createdAt: new Date(row.p1_created_at),
           updatedAt: new Date(row.p1_updated_at),
@@ -702,6 +746,7 @@ class DatabaseService {
           gender: row.p2_gender as Gender,
           wins: row.p2_wins,
           losses: row.p2_losses,
+          totalWinnings: row.p2_total_winnings || 0,
           profilePicture: row.p2_profile_picture || undefined,
           createdAt: new Date(row.p2_created_at),
           updatedAt: new Date(row.p2_updated_at),
@@ -721,31 +766,31 @@ class DatabaseService {
     try {
       // Single JOIN query to get all matches with team and player data
       const rows = this.database.getAllSync(
-        `SELECT m.id, m.tournament_id, m.score1, m.score2, m.round, m.is_complete, 
+        `SELECT m.id, m.tournament_id, m.score1, m.score2, m.round, m.is_complete,
          m.created_at, m.updated_at,
          -- Team 1 data
          t1.id as t1_id, t1.tournament_id as t1_tournament_id, t1.team_name as t1_team_name, t1.created_at as t1_created_at,
          t1p1.id as t1p1_id, t1p1.name as t1p1_name, t1p1.nickname as t1p1_nickname, t1p1.gender as t1p1_gender,
-         t1p1.wins as t1p1_wins, t1p1.losses as t1p1_losses, t1p1.profile_picture as t1p1_profile_picture,
+         t1p1.wins as t1p1_wins, t1p1.losses as t1p1_losses, t1p1.total_winnings as t1p1_total_winnings, t1p1.profile_picture as t1p1_profile_picture,
          t1p1.created_at as t1p1_created_at, t1p1.updated_at as t1p1_updated_at,
          t1p2.id as t1p2_id, t1p2.name as t1p2_name, t1p2.nickname as t1p2_nickname, t1p2.gender as t1p2_gender,
-         t1p2.wins as t1p2_wins, t1p2.losses as t1p2_losses, t1p2.profile_picture as t1p2_profile_picture,
+         t1p2.wins as t1p2_wins, t1p2.losses as t1p2_losses, t1p2.total_winnings as t1p2_total_winnings, t1p2.profile_picture as t1p2_profile_picture,
          t1p2.created_at as t1p2_created_at, t1p2.updated_at as t1p2_updated_at,
          -- Team 2 data (nullable for bye)
          t2.id as t2_id, t2.tournament_id as t2_tournament_id, t2.team_name as t2_team_name, t2.created_at as t2_created_at,
          t2p1.id as t2p1_id, t2p1.name as t2p1_name, t2p1.nickname as t2p1_nickname, t2p1.gender as t2p1_gender,
-         t2p1.wins as t2p1_wins, t2p1.losses as t2p1_losses, t2p1.profile_picture as t2p1_profile_picture,
+         t2p1.wins as t2p1_wins, t2p1.losses as t2p1_losses, t2p1.total_winnings as t2p1_total_winnings, t2p1.profile_picture as t2p1_profile_picture,
          t2p1.created_at as t2p1_created_at, t2p1.updated_at as t2p1_updated_at,
          t2p2.id as t2p2_id, t2p2.name as t2p2_name, t2p2.nickname as t2p2_nickname, t2p2.gender as t2p2_gender,
-         t2p2.wins as t2p2_wins, t2p2.losses as t2p2_losses, t2p2.profile_picture as t2p2_profile_picture,
+         t2p2.wins as t2p2_wins, t2p2.losses as t2p2_losses, t2p2.total_winnings as t2p2_total_winnings, t2p2.profile_picture as t2p2_profile_picture,
          t2p2.created_at as t2p2_created_at, t2p2.updated_at as t2p2_updated_at,
          -- Winner data (nullable)
          tw.id as tw_id, tw.tournament_id as tw_tournament_id, tw.team_name as tw_team_name, tw.created_at as tw_created_at,
          twp1.id as twp1_id, twp1.name as twp1_name, twp1.nickname as twp1_nickname, twp1.gender as twp1_gender,
-         twp1.wins as twp1_wins, twp1.losses as twp1_losses, twp1.profile_picture as twp1_profile_picture,
+         twp1.wins as twp1_wins, twp1.losses as twp1_losses, twp1.total_winnings as twp1_total_winnings, twp1.profile_picture as twp1_profile_picture,
          twp1.created_at as twp1_created_at, twp1.updated_at as twp1_updated_at,
          twp2.id as twp2_id, twp2.name as twp2_name, twp2.nickname as twp2_nickname, twp2.gender as twp2_gender,
-         twp2.wins as twp2_wins, twp2.losses as twp2_losses, twp2.profile_picture as twp2_profile_picture,
+         twp2.wins as twp2_wins, twp2.losses as twp2_losses, twp2.total_winnings as twp2_total_winnings, twp2.profile_picture as twp2_profile_picture,
          twp2.created_at as twp2_created_at, twp2.updated_at as twp2_updated_at
          FROM matches m
          -- Team 1 joins (required)
@@ -777,6 +822,7 @@ class DatabaseService {
             gender: row.t1p1_gender as Gender,
             wins: row.t1p1_wins,
             losses: row.t1p1_losses,
+            totalWinnings: row.t1p1_total_winnings || 0,
             profilePicture: row.t1p1_profile_picture || undefined,
             createdAt: new Date(row.t1p1_created_at),
             updatedAt: new Date(row.t1p1_updated_at),
@@ -788,6 +834,7 @@ class DatabaseService {
             gender: row.t1p2_gender as Gender,
             wins: row.t1p2_wins,
             losses: row.t1p2_losses,
+            totalWinnings: row.t1p2_total_winnings || 0,
             profilePicture: row.t1p2_profile_picture || undefined,
             createdAt: new Date(row.t1p2_created_at),
             updatedAt: new Date(row.t1p2_updated_at),
@@ -809,6 +856,7 @@ class DatabaseService {
               gender: row.t2p1_gender as Gender,
               wins: row.t2p1_wins,
               losses: row.t2p1_losses,
+              totalWinnings: row.t2p1_total_winnings || 0,
               profilePicture: row.t2p1_profile_picture || undefined,
               createdAt: new Date(row.t2p1_created_at),
               updatedAt: new Date(row.t2p1_updated_at),
@@ -820,6 +868,7 @@ class DatabaseService {
               gender: row.t2p2_gender as Gender,
               wins: row.t2p2_wins,
               losses: row.t2p2_losses,
+              totalWinnings: row.t2p2_total_winnings || 0,
               profilePicture: row.t2p2_profile_picture || undefined,
               createdAt: new Date(row.t2p2_created_at),
               updatedAt: new Date(row.t2p2_updated_at),
@@ -842,6 +891,7 @@ class DatabaseService {
               gender: row.twp1_gender as Gender,
               wins: row.twp1_wins,
               losses: row.twp1_losses,
+              totalWinnings: row.twp1_total_winnings || 0,
               profilePicture: row.twp1_profile_picture || undefined,
               createdAt: new Date(row.twp1_created_at),
               updatedAt: new Date(row.twp1_updated_at),
@@ -853,6 +903,7 @@ class DatabaseService {
               gender: row.twp2_gender as Gender,
               wins: row.twp2_wins,
               losses: row.twp2_losses,
+              totalWinnings: row.twp2_total_winnings || 0,
               profilePicture: row.twp2_profile_picture || undefined,
               createdAt: new Date(row.twp2_created_at),
               updatedAt: new Date(row.twp2_updated_at),
@@ -1046,6 +1097,7 @@ class DatabaseService {
         gender: row.gender as Gender,
         wins: row.wins,
         losses: row.losses,
+        totalWinnings: row.total_winnings || 0,
         profilePicture: row.profile_picture || undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),

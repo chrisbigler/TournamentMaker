@@ -143,6 +143,7 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           gender,
           wins: player.wins,
           losses: player.losses,
+          totalWinnings: player.totalWinnings,
           profilePicture: finalProfilePicture,
         });
       } else {
@@ -152,6 +153,7 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           gender,
           wins: 0,
           losses: 0,
+          totalWinnings: 0,
           profilePicture: finalProfilePicture,
         });
       }

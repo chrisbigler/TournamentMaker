@@ -16,6 +16,7 @@ export interface Player {
   gender: Gender;
   wins: number;
   losses: number;
+  totalWinnings: number;
   profilePicture?: string; // Path to the profile picture file
   createdAt: Date;
   updatedAt: Date;
@@ -103,6 +104,7 @@ export interface DatabasePlayer {
   gender: string;
   wins: number;
   losses: number;
+  total_winnings: number;
   profile_picture: string | null; // Path to the profile picture file
   created_at: string;
   updated_at: string;

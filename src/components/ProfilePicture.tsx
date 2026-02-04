@@ -97,7 +97,7 @@ const createStyles = (theme: Theme) =>
     height: '100%',
   },
   placeholder: {
-    backgroundColor: theme.colors.primary.slateGray,
+    backgroundColor: theme.colors.legacy.slateGray,
   },
   initials: {
     color: theme.colors.background.pureWhite,

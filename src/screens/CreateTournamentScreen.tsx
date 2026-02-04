@@ -438,12 +438,6 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const createStyles = (theme: Theme) => {
-  const inputLineHeight = theme.textStyles.body.lineHeight;
-  const inputVerticalPadding = Math.max(
-    0,
-    Math.round((48 - inputLineHeight) / 2) - (Platform.OS === 'ios' ? 2 : 0)
-  );
-
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -481,9 +475,8 @@ const createStyles = (theme: Theme) => {
       borderColor: theme.colors.border.default,
       borderRadius: theme.borderRadius.sm,
       paddingHorizontal: theme.spacing.md,
-      paddingVertical: inputVerticalPadding,
+      paddingVertical: 12,
       height: 48,
-      lineHeight: inputLineHeight,
       textAlignVertical: 'center',
     },
     currencyInputContainer: {
@@ -505,9 +498,7 @@ const createStyles = (theme: Theme) => {
       ...theme.textStyles.body,
       color: theme.colors.text.primary,
       paddingLeft: theme.spacing.xs,
-      paddingVertical: inputVerticalPadding,
       height: '100%',
-      lineHeight: inputLineHeight,
       textAlignVertical: 'center',
     },
     modeOption: {

@@ -301,16 +301,54 @@ class TournamentService {
     }
   }
 
-  // Complete tournament (mark as COMPLETED and set winner)
+  // Complete tournament (mark as COMPLETED, set winner, and distribute prizes)
   async completeTournament(tournamentId: string, winner: Team): Promise<void> {
     try {
+      // Get tournament to access pot and matches
+      const tournament = await DatabaseService.getTournament(tournamentId);
+      if (!tournament) {
+        throw new Error('Tournament not found');
+      }
+
       await DatabaseService.updateTournament(tournamentId, {
         status: TournamentStatus.COMPLETED,
         winnerId: winner.id
       });
+
+      // Distribute prizes if there's a pot
+      if (tournament.pot > 0) {
+        await this.distributePrizes(tournament, winner);
+      }
     } catch (error) {
       console.error('Failed to complete tournament:', error);
       throw error;
+    }
+  }
+
+  // Distribute prize money to winning and runner-up teams
+  private async distributePrizes(tournament: Tournament, winner: Team): Promise<void> {
+    try {
+      const pot = tournament.pot;
+      const firstPlacePrize = pot * 0.7;  // 70% to winner
+      const secondPlacePrize = pot * 0.3; // 30% to runner-up
+
+      // Get runner-up team from the final match loser
+      const runnerUp = this.getTournamentRunnerUp(tournament.matches);
+
+      // Each player on winning team gets half of first place prize
+      const winnerPlayerPrize = firstPlacePrize / 2;
+      await DatabaseService.updatePlayerWinnings(winner.player1.id, winnerPlayerPrize);
+      await DatabaseService.updatePlayerWinnings(winner.player2.id, winnerPlayerPrize);
+
+      // Each player on runner-up team gets half of second place prize
+      if (runnerUp) {
+        const runnerUpPlayerPrize = secondPlacePrize / 2;
+        await DatabaseService.updatePlayerWinnings(runnerUp.player1.id, runnerUpPlayerPrize);
+        await DatabaseService.updatePlayerWinnings(runnerUp.player2.id, runnerUpPlayerPrize);
+      }
+    } catch (error) {
+      console.error('Failed to distribute prizes:', error);
+      // Don't throw error to avoid breaking tournament completion
     }
   }
 
@@ -472,18 +510,73 @@ class TournamentService {
     }
   }
 
-  // Reset all player statistics to 0-0
+  // Reset all player statistics to 0-0 and winnings to 0
   async resetPlayerStatistics(): Promise<void> {
     try {
-      // Get all players and reset their stats to 0
+      // Get all players and reset their stats and winnings to 0
       const players = await DatabaseService.getAllPlayers();
 
-      // Reset all player stats to 0
+      // Reset all player stats and winnings to 0
       for (const player of players) {
         await DatabaseService.updatePlayerStats(player.id, 0, 0);
+        await DatabaseService.setPlayerWinnings(player.id, 0);
       }
     } catch (error) {
       console.error('Failed to reset player statistics:', error);
+      throw error;
+    }
+  }
+
+  // Recalculate player winnings from all completed tournaments
+  async recalculatePlayerWinnings(): Promise<void> {
+    try {
+      // Get all players and build a map for winnings
+      const players = await DatabaseService.getAllPlayers();
+      const playerWinningsMap = new Map<string, number>();
+
+      // Initialize all players with 0 winnings
+      for (const player of players) {
+        playerWinningsMap.set(player.id, 0);
+      }
+
+      // Get all completed tournaments
+      const tournaments = await DatabaseService.getAllTournaments();
+      const completedTournaments = tournaments.filter(
+        t => t.status === TournamentStatus.COMPLETED && t.pot > 0 && t.winner
+      );
+
+      // Process each completed tournament
+      for (const tournament of completedTournaments) {
+        const pot = tournament.pot;
+        const firstPlacePrize = pot * 0.7;
+        const secondPlacePrize = pot * 0.3;
+
+        // Add winnings for winner team
+        if (tournament.winner) {
+          const winnerPlayerPrize = firstPlacePrize / 2;
+          const winner1Current = playerWinningsMap.get(tournament.winner.player1.id) || 0;
+          const winner2Current = playerWinningsMap.get(tournament.winner.player2.id) || 0;
+          playerWinningsMap.set(tournament.winner.player1.id, winner1Current + winnerPlayerPrize);
+          playerWinningsMap.set(tournament.winner.player2.id, winner2Current + winnerPlayerPrize);
+
+          // Add winnings for runner-up team
+          const runnerUp = this.getTournamentRunnerUp(tournament.matches);
+          if (runnerUp) {
+            const runnerUpPlayerPrize = secondPlacePrize / 2;
+            const runnerUp1Current = playerWinningsMap.get(runnerUp.player1.id) || 0;
+            const runnerUp2Current = playerWinningsMap.get(runnerUp.player2.id) || 0;
+            playerWinningsMap.set(runnerUp.player1.id, runnerUp1Current + runnerUpPlayerPrize);
+            playerWinningsMap.set(runnerUp.player2.id, runnerUp2Current + runnerUpPlayerPrize);
+          }
+        }
+      }
+
+      // Update all player winnings in database (reset and set new values)
+      for (const [playerId, winnings] of playerWinningsMap) {
+        await DatabaseService.setPlayerWinnings(playerId, winnings);
+      }
+    } catch (error) {
+      console.error('Failed to recalculate player winnings:', error);
       throw error;
     }
   }

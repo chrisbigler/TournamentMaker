@@ -138,7 +138,7 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
           {isComplete && (
             <View style={styles.statusBadge}>
               <MaterialIcons name="check" size={12} color={theme.colors.primary} />
-              <Text style={styles.statusText}>Complete</Text>
+              <Text style={styles.badgeStatusText}>Complete</Text>
             </View>
           )}
           {isBye && (
@@ -454,7 +454,7 @@ const createStyles = (theme: Theme) =>
       backgroundColor: `${theme.colors.primary}15`,
       borderRadius: theme.borderRadius.full,
     },
-    statusText: {
+    badgeStatusText: {
       ...theme.textStyles.caption,
       color: theme.colors.primary,
       fontWeight: theme.typography.fontWeights.medium,

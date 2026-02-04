@@ -351,7 +351,7 @@ const createStyles = (theme: Theme) => {
     listCount: {
       ...theme.textStyles.h4,
       color: theme.colors.text.tertiary,
-      fontWeight: theme.typography.fontWeights.regular,
+      fontWeight: theme.typography.fontWeights.normal,
     },
     addButton: {
       paddingHorizontal: theme.spacing.md,

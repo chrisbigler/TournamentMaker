@@ -109,16 +109,7 @@ const MatchScreen: React.FC<Props> = ({ navigation, route }) => {
       );
 
       if (isComplete) {
-        Alert.alert(
-          'Match Complete',
-          `${score1 > score2 ? match.team1.teamName : match.team2?.teamName} wins!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        navigation.goBack();
       } else {
         Alert.alert('Saved', 'Match score updated');
       }

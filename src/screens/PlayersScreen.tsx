@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
-  TextInput,
+  Modal,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -23,8 +23,25 @@ import Card from '../components/Card';
 import ProfilePicture from '../components/ProfilePicture';
 import ScreenHeader from '../components/ScreenHeader';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { formatCurrency } from '../utils/currency';
 
 type PlayersScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Players'>;
+
+type SortOption = 'winPercentage' | 'alphabetical' | 'wins' | 'losses' | 'winnings';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  option: SortOption;
+  direction: SortDirection;
+}
+
+const SORT_OPTIONS: { key: SortOption; label: string; defaultDirection: SortDirection }[] = [
+  { key: 'winPercentage', label: 'Win %', defaultDirection: 'desc' },
+  { key: 'alphabetical', label: 'Alphabetical', defaultDirection: 'asc' },
+  { key: 'wins', label: 'Wins', defaultDirection: 'desc' },
+  { key: 'losses', label: 'Losses', defaultDirection: 'desc' },
+  { key: 'winnings', label: 'Winnings', defaultDirection: 'desc' },
+];
 
 interface Props {
   navigation: PlayersScreenNavigationProp;
@@ -38,14 +55,14 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [fixingStats, setFixingStats] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ option: 'winPercentage', direction: 'desc' });
+  const [sortModalVisible, setSortModalVisible] = useState(false);
 
   const loadPlayers = async () => {
     try {
       setLoading(true);
       const allPlayers = await DatabaseService.getAllPlayers();
-      const sortedPlayers = sortPlayersByWinPercentage(allPlayers);
-      setPlayers(sortedPlayers);
-      setFilteredPlayers(sortedPlayers);
+      setPlayers(allPlayers);
     } catch (error) {
       Alert.alert('Error', 'Failed to load players');
       console.error('Failed to load players:', error);
@@ -54,41 +71,71 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const sortPlayers = useCallback((playerList: Player[], config: SortConfig): Player[] => {
+    const multiplier = config.direction === 'desc' ? -1 : 1;
+
+    return [...playerList].sort((a, b) => {
+      switch (config.option) {
+        case 'winPercentage': {
+          const aGamesPlayed = a.wins + a.losses;
+          const bGamesPlayed = b.wins + b.losses;
+
+          // Players with no games go to bottom regardless of direction
+          if (aGamesPlayed === 0 && bGamesPlayed === 0) return 0;
+          if (aGamesPlayed === 0) return 1;
+          if (bGamesPlayed === 0) return -1;
+
+          const aWinRate = a.wins / aGamesPlayed;
+          const bWinRate = b.wins / bGamesPlayed;
+
+          if (aWinRate !== bWinRate) {
+            return (aWinRate - bWinRate) * multiplier;
+          }
+          // Tiebreaker: more wins is better
+          if (a.wins !== b.wins) {
+            return (a.wins - b.wins) * multiplier;
+          }
+          // Secondary tiebreaker: fewer losses is better
+          return (b.losses - a.losses) * multiplier;
+        }
+        case 'alphabetical':
+          return a.name.localeCompare(b.name) * multiplier;
+        case 'wins':
+          if (a.wins !== b.wins) {
+            return (a.wins - b.wins) * multiplier;
+          }
+          // Tiebreaker: fewer losses
+          return (b.losses - a.losses) * multiplier;
+        case 'losses':
+          if (a.losses !== b.losses) {
+            return (a.losses - b.losses) * multiplier;
+          }
+          // Tiebreaker: more wins
+          return (a.wins - b.wins) * multiplier;
+        case 'winnings':
+          return (a.totalWinnings - b.totalWinnings) * multiplier;
+        default:
+          return 0;
+      }
+    });
+  }, []);
+
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredPlayers(players);
-    } else {
-      const filtered = players.filter(player =>
+    let result = players;
+
+    // Filter by search
+    if (searchQuery.trim() !== '') {
+      result = result.filter(player =>
         player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (player.nickname && player.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
       );
-      setFilteredPlayers(filtered);
     }
-  }, [searchQuery, players]);
 
-  const sortPlayersByWinPercentage = (playerList: Player[]) => {
-    return [...playerList].sort((a, b) => {
-      const aGamesPlayed = a.wins + a.losses;
-      const bGamesPlayed = b.wins + b.losses;
-      
-      if (aGamesPlayed === 0 && bGamesPlayed === 0) return 0;
-      if (aGamesPlayed === 0) return 1;
-      if (bGamesPlayed === 0) return -1;
-      
-      const aWinRate = a.wins / aGamesPlayed;
-      const bWinRate = b.wins / bGamesPlayed;
-      
-      if (aWinRate !== bWinRate) {
-        return bWinRate - aWinRate;
-      }
-      
-      if (a.wins !== b.wins) {
-        return b.wins - a.wins;
-      }
-      
-      return a.losses - b.losses;
-    });
-  };
+    // Apply sort
+    result = sortPlayers(result, sortConfig);
+
+    setFilteredPlayers(result);
+  }, [searchQuery, players, sortConfig, sortPlayers]);
 
   const getBadgeForPlayer = useCallback((player: Player, index: number) => {
     const playersWithGames = players.filter(p => (p.wins + p.losses) > 0);
@@ -111,6 +158,24 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     
     return null;
   }, [players, theme.colors.primary, theme.colors.semantic.error]);
+
+  const handleSortOptionPress = (optionKey: SortOption) => {
+    if (sortConfig.option === optionKey) {
+      // Toggle direction if same option selected
+      setSortConfig(prev => ({
+        ...prev,
+        direction: prev.direction === 'asc' ? 'desc' : 'asc',
+      }));
+    } else {
+      // Switch to new option with its default direction
+      const option = SORT_OPTIONS.find(o => o.key === optionKey);
+      setSortConfig({
+        option: optionKey,
+        direction: option?.defaultDirection || 'desc',
+      });
+    }
+    setSortModalVisible(false);
+  };
 
   const handleFixPlayerStats = async () => {
     Alert.alert(
@@ -215,6 +280,11 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
                   ? `${Math.round((item.wins / (item.wins + item.losses)) * 100)}%`
                   : '0%'}
               </Text>
+              {item.totalWinnings > 0 && (
+                <Text style={styles.winningsText}>
+                  {formatCurrency(item.totalWinnings)}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -258,19 +328,65 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const renderResetButton = () => (
-    <TouchableOpacity
-      style={styles.resetButton}
-      onPress={handleFixPlayerStats}
-      disabled={fixingStats}
-      activeOpacity={0.7}
+  const renderHeaderActions = () => (
+    <View style={styles.headerActions}>
+      <TouchableOpacity
+        style={styles.sortButton}
+        onPress={() => setSortModalVisible(true)}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons name="sort" size={18} color="#FFFFFF" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.resetButton}
+        onPress={handleFixPlayerStats}
+        disabled={fixingStats}
+        activeOpacity={0.7}
+      >
+        <MaterialIcons name="sync" size={18} color="#FFFFFF" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderSortModal = () => (
+    <Modal
+      visible={sortModalVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setSortModalVisible(false)}
     >
-      <MaterialIcons 
-        name="sync" 
-        size={18} 
-        color="#FFFFFF" 
-      />
-    </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setSortModalVisible(false)}
+      >
+        <View style={styles.sortModalContent}>
+          <Text style={styles.sortModalTitle}>Sort Players</Text>
+          {SORT_OPTIONS.map(option => {
+            const isSelected = sortConfig.option === option.key;
+            return (
+              <TouchableOpacity
+                key={option.key}
+                style={[styles.sortOption, isSelected && styles.sortOptionSelected]}
+                onPress={() => handleSortOptionPress(option.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.sortOptionText, isSelected && styles.sortOptionTextSelected]}>
+                  {option.label}
+                </Text>
+                {isSelected && (
+                  <MaterialIcons
+                    name={sortConfig.direction === 'asc' ? 'arrow-upward' : 'arrow-downward'}
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </TouchableOpacity>
+    </Modal>
   );
 
   return (
@@ -284,8 +400,9 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Search players..."
-        rightAction={renderResetButton()}
+        rightAction={renderHeaderActions()}
       />
+      {renderSortModal()}
 
       {loading || fixingStats ? (
         <View style={styles.loadingContainer}>
@@ -317,6 +434,18 @@ const createStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background.primary,
     },
+    headerActions: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    sortButton: {
+      width: 40,
+      height: 40,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     resetButton: {
       width: 40,
       height: 40,
@@ -324,6 +453,45 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sortModalContent: {
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.lg,
+      width: '80%',
+      maxWidth: 300,
+      ...theme.shadows.high,
+    },
+    sortModalTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.md,
+      textAlign: 'center',
+    },
+    sortOption: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.sm,
+      borderRadius: theme.borderRadius.sm,
+    },
+    sortOptionSelected: {
+      backgroundColor: theme.colors.background.secondary,
+    },
+    sortOptionText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+    },
+    sortOptionTextSelected: {
+      color: theme.colors.primary,
+      fontWeight: theme.typography.fontWeights.medium,
     },
     listContainer: {
       padding: theme.spacing.lg,
@@ -417,6 +585,12 @@ const createStyles = (theme: Theme) =>
       ...theme.textStyles.caption,
       color: theme.colors.primary,
       fontWeight: theme.typography.fontWeights.medium,
+    },
+    winningsText: {
+      ...theme.textStyles.caption,
+      color: theme.colors.semantic.success,
+      fontWeight: theme.typography.fontWeights.medium,
+      marginTop: 2,
     },
     emptyState: {
       alignItems: 'center',
