@@ -14,6 +14,7 @@ import DatabaseService from '../services/DatabaseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HomeMain'>;
 
@@ -24,8 +25,8 @@ interface Props {
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+  
   useEffect(() => {
-    // Initialize database when app starts
     initializeDatabase();
   }, []);
 
@@ -45,77 +46,115 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
 
-        {/* Getting Started Section */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.sectionTitle}>Getting Started</Text>
-          
-          <View style={styles.tipCard}>
-            <MaterialIcons 
-              name="lightbulb" 
-              size={40} 
-              color={theme.colors.accent.warningOrange} 
-            />
-            <View style={styles.tipContent}>
-              <Text style={styles.tipTitle}>Pro Tip</Text>
-              <Text style={styles.tipDescription}>
-                Set up your players and groups first, then creating tournaments becomes quick and easy!
-              </Text>
+        {/* Hero Section with Gradient */}
+        <View style={styles.heroSection}>
+          <LinearGradient
+            colors={[`${theme.colors.primary}15`, `${theme.colors.primary}05`, 'transparent']}
+            style={styles.heroGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          <View style={styles.heroContent}>
+            <View style={styles.heroIconContainer}>
+              <MaterialIcons name="emoji-events" size={32} color={theme.colors.primary} />
             </View>
+            <Text style={styles.heroTitle}>Ready to compete?</Text>
+            <Text style={styles.heroSubtitle}>
+              Set up your players and groups first, then creating tournaments becomes quick and easy.
+            </Text>
           </View>
-
-          {/* Create Tournament Button */}
+          
+          {/* Primary CTA */}
           <TouchableOpacity
-            style={styles.createTournamentButton}
+            style={styles.createButton}
             onPress={() => navigation.navigate('CreateTournament')}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Create new tournament">
-            <MaterialIcons 
-              name="add" 
-              size={24} 
-              color={theme.colors.text.white} 
-            />
-            <Text style={styles.createTournamentText}>Create Tournament</Text>
+            <LinearGradient
+              colors={[theme.colors.primary, theme.colors.primaryDark]}
+              style={styles.createButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <MaterialIcons name="add" size={22} color="#FFFFFF" />
+              <Text style={styles.createButtonText}>Create Tournament</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {/* Feature Highlights */}
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <TouchableOpacity 
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('CreatePlayer', {})}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.quickActionIcon, { backgroundColor: '#3B82F620' }]}>
+              <MaterialIcons name="person-add" size={20} color="#3B82F6" />
+            </View>
+            <Text style={styles.quickActionLabel}>Add Player</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('CreatePlayerGroup', {})}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.quickActionIcon, { backgroundColor: '#8B5CF620' }]}>
+              <MaterialIcons name="group-add" size={20} color="#8B5CF6" />
+            </View>
+            <Text style={styles.quickActionLabel}>Create Group</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('TournamentHistory')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.quickActionIcon, { backgroundColor: '#F59E0B20' }]}>
+              <MaterialIcons name="history" size={20} color="#F59E0B" />
+            </View>
+            <Text style={styles.quickActionLabel}>History</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Features Section */}
         <View style={styles.featuresSection}>
-          <Text style={styles.sectionTitle}>Perfect For</Text>
-          <View style={styles.featureGrid}>
-            <View style={styles.featureCard}>
-              <MaterialIcons 
-                name="nature" 
-                size={40} 
-                color={theme.colors.accent.successGreen} 
-              />
-              <Text style={styles.featureTitle}>Outdoor Events</Text>
+          <Text style={styles.sectionTitle}>Built for outdoor fun</Text>
+          
+          <View style={styles.featureCard}>
+            <View style={[styles.featureIconContainer, { backgroundColor: `${theme.colors.primary}15` }]}>
+              <MaterialIcons name="wifi-off" size={24} color={theme.colors.primary} />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Works Offline</Text>
               <Text style={styles.featureDescription}>
-                Offline support for when you're ready to disconnect.
+                No internet? No problem. Everything works locally on your device.
               </Text>
             </View>
-            
-            <View style={styles.featureCard}>
-              <MaterialIcons 
-                name="groups" 
-                size={40} 
-                color={theme.colors.accent.infoBlue} 
-              />
-              <Text style={styles.featureTitle}>Group Activities</Text>
+          </View>
+          
+          <View style={styles.featureCard}>
+            <View style={[styles.featureIconContainer, { backgroundColor: '#3B82F615' }]}>
+              <MaterialIcons name="groups" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Team Pairing</Text>
               <Text style={styles.featureDescription}>
-                Manage multiple teams and players effortlessly
+                Auto-generate boy/girl teams or let us randomly pair everyone.
               </Text>
             </View>
-            
-            <View style={styles.featureCard}>
-              <MaterialIcons 
-                name="scoreboard" 
-                size={40} 
-                color={theme.colors.accent.warningOrange} 
-              />
-              <Text style={styles.featureTitle}>Score Tracking</Text>
+          </View>
+          
+          <View style={styles.featureCard}>
+            <View style={[styles.featureIconContainer, { backgroundColor: '#F59E0B15' }]}>
+              <MaterialIcons name="trending-up" size={24} color="#F59E0B" />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureTitle}>Track Stats</Text>
               <Text style={styles.featureDescription}>
-                Real-time scoring with tournament progression
+                Keep track of wins, losses, and bragging rights across all tournaments.
               </Text>
             </View>
           </View>
@@ -128,104 +167,144 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-  },
-  tipsSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing['2xl'],
-    backgroundColor: theme.colors.background.pureWhite,
-    marginHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.card,
-  },
-  sectionTitle: {
-    ...theme.textStyles.h3,
-    color: theme.colors.text.darkGray,
-    marginBottom: theme.spacing.xl,
-    fontWeight: '600',
-  },
-  tipCard: {
-    backgroundColor: theme.colors.background.coolGray,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-  },
-  tipContent: {
-    alignItems: 'center',
-  },
-  tipTitle: {
-    ...theme.textStyles.h4,
-    color: theme.colors.text.darkGray,
-    fontWeight: '600',
-    marginBottom: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  tipDescription: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.mediumGray,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  createTournamentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.action.secondary,
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    gap: theme.spacing.sm,
-    ...theme.shadows.card,
-    width: '100%',
-  },
-  createTournamentText: {
-    ...theme.textStyles.buttonLarge,
-    color: theme.colors.text.white,
-    fontWeight: 'bold',
-  },
-  featuresSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing['2xl'],
-    backgroundColor: theme.colors.background.pureWhite,
-    marginHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.card,
-  },
-  featureGrid: {
-    gap: theme.spacing.lg,
-  },
-  featureCard: {
-    backgroundColor: theme.colors.background.coolGray,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-  },
-  featureTitle: {
-    ...theme.textStyles.h4,
-    color: theme.colors.text.darkGray,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    fontWeight: '600',
-  },
-  featureDescription: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.mediumGray,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.primary,
+    },
+    scrollContainer: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: theme.spacing['2xl'],
+    },
+    // Hero Section
+    heroSection: {
+      padding: theme.spacing.xl,
+      paddingTop: theme.spacing.lg,
+      position: 'relative',
+    },
+    heroGradient: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 200,
+      borderBottomLeftRadius: 24,
+      borderBottomRightRadius: 24,
+    },
+    heroContent: {
+      marginBottom: theme.spacing.xl,
+    },
+    heroIconContainer: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: `${theme.colors.primary}15`,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    heroTitle: {
+      ...theme.textStyles.h2,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.sm,
+    },
+    heroSubtitle: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+      lineHeight: 22,
+    },
+    createButton: {
+      borderRadius: theme.borderRadius.lg,
+      overflow: 'hidden',
+      ...theme.shadows.medium,
+    },
+    createButtonGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.xl,
+      gap: theme.spacing.sm,
+    },
+    createButtonText: {
+      ...theme.textStyles.button,
+      color: '#FFFFFF',
+      fontWeight: theme.typography.fontWeights.semibold,
+    },
+    // Quick Actions
+    quickActions: {
+      flexDirection: 'row',
+      paddingHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.xl,
+      gap: theme.spacing.sm,
+    },
+    quickActionCard: {
+      flex: 1,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      padding: theme.spacing.md,
+      alignItems: 'center',
+      ...theme.shadows.low,
+    },
+    quickActionIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: theme.spacing.sm,
+    },
+    quickActionLabel: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.secondary,
+      fontWeight: theme.typography.fontWeights.medium,
+      textAlign: 'center',
+    },
+    // Features Section
+    featuresSection: {
+      paddingHorizontal: theme.spacing.xl,
+    },
+    sectionTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.lg,
+    },
+    featureCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      padding: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
+    },
+    featureIconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: theme.spacing.md,
+    },
+    featureContent: {
+      flex: 1,
+    },
+    featureTitle: {
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.semibold,
+      color: theme.colors.text.primary,
+      marginBottom: 4,
+    },
+    featureDescription: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.text.tertiary,
+      lineHeight: 18,
+    },
   });
 
-export default HomeScreen; 
+export default HomeScreen;

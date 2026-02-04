@@ -31,21 +31,25 @@ const Card: React.FC<CardProps> = ({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  base: {
-    backgroundColor: theme.colors.background.coolGray,
-    borderRadius: theme.borderRadius.lg,
-  },
-  default: {
-    ...theme.shadows.card,
-  },
-  elevated: {
-    ...theme.shadows.elevated,
-  },
-  outlined: {
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    backgroundColor: theme.colors.background.pureWhite,
-  },
+    base: {
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+    },
+    default: {
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      ...theme.shadows.low,
+    },
+    elevated: {
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      ...theme.shadows.medium,
+    },
+    outlined: {
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
+      backgroundColor: theme.colors.background.primary,
+    },
   });
 
-export default Card; 
+export default Card;

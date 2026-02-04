@@ -19,7 +19,7 @@ import ImageService from '../services/ImageService';
 import ProfilePicture from '../components/ProfilePicture';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
-import { Button, Card, TextInput as CustomTextInput } from '../components';
+import { Button, TextInput as CustomTextInput, ScreenHeader } from '../components';
 
 type CreatePlayerScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayer'>;
 type CreatePlayerScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayer'>;
@@ -64,7 +64,6 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
         }
       );
     } else {
-      // For Android, show an Alert dialog
       Alert.alert(
         'Select Photo',
         'Choose how you want to add a profile picture',
@@ -127,11 +126,9 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 
       let finalProfilePicture = profilePicture;
 
-      // If we have a new profile picture (not from the database), save it
       if (profilePicture && !profilePicture.includes('profile_pictures/')) {
         const playerId = isEditing && player ? player.id : Date.now().toString() + Math.random().toString(36).substr(2, 9);
         
-        // Delete old profile picture if editing and had one
         if (isEditing && player?.profilePicture) {
           await ImageService.deleteProfilePicture(player.profilePicture);
         }
@@ -140,7 +137,6 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
       }
 
       if (isEditing && player) {
-        // Update existing player
         await DatabaseService.updatePlayer(player.id, {
           name: name.trim(),
           nickname: nickname.trim() || undefined,
@@ -150,7 +146,6 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           profilePicture: finalProfilePicture,
         });
       } else {
-        // Create new player
         await DatabaseService.createPlayer({
           name: name.trim(),
           nickname: nickname.trim() || undefined,
@@ -183,7 +178,6 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Delete profile picture if exists
               if (player.profilePicture) {
                 await ImageService.deleteProfilePicture(player.profilePicture);
               }
@@ -210,121 +204,135 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={isTablet ? styles.contentTablet : styles.content}>
-        <Card variant="outlined" padding={isTablet ? "2xl" : "lg"} style={isTablet ? styles.formTablet : styles.form}>
-          {/* Profile Picture Section */}
-          <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <Text style={isTablet ? styles.labelTablet : styles.label}>Profile Picture</Text>
-            <View style={isTablet ? styles.profilePictureContainerTablet : styles.profilePictureContainer}>
-              <TouchableOpacity
-                style={styles.profilePictureButton}
-                onPress={showImagePicker}>
-                <ProfilePicture
-                  profilePicture={profilePicture}
-                  name={name || 'Player'}
-                  size={profileSize}
-                  showBorder={true}
-                />
-              </TouchableOpacity>
-              <View style={isTablet ? styles.profilePictureActionsTablet : styles.profilePictureActions}>
+      {!isEditing && (
+        <ScreenHeader
+          variant="create"
+          title="New Player"
+          subtitle="Add a player to your roster"
+          accentColor="#3B82F6"
+        />
+      )}
+      {isEditing && player && (
+        <ScreenHeader
+          variant="detail"
+          title={player.name}
+          subtitle={`${player.wins}W - ${player.losses}L`}
+        />
+      )}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        {/* Profile Picture Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profile Picture</Text>
+          <View style={styles.profilePictureContainer}>
+            <TouchableOpacity
+              style={styles.profilePictureButton}
+              onPress={showImagePicker}>
+              <ProfilePicture
+                profilePicture={profilePicture}
+                name={name || 'Player'}
+                size={profileSize}
+                showBorder={true}
+              />
+            </TouchableOpacity>
+            <View style={styles.profilePictureActions}>
+              <Button
+                title={profilePicture ? 'Change' : 'Add Photo'}
+                onPress={showImagePicker}
+                variant="secondary"
+                size="sm"
+              />
+              {profilePicture && (
                 <Button
-                  title={profilePicture ? 'Change Photo' : 'Add Photo'}
-                  onPress={showImagePicker}
-                  variant="secondary"
-                  size={isTablet ? "md" : "sm"}
+                  title="Remove"
+                  onPress={handleRemoveProfilePicture}
+                  variant="ghost"
+                  size="sm"
                 />
-                {profilePicture && (
-                  <Button
-                    title="Remove"
-                    onPress={handleRemoveProfilePicture}
-                    variant="outline"
-                    size={isTablet ? "md" : "sm"}
-                  />
-                )}
-              </View>
+              )}
             </View>
           </View>
+        </View>
 
-          <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <CustomTextInput
-              label="Name *"
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter player name"
-              autoCapitalize="words"
-              autoCorrect={false}
-              containerStyle={isTablet ? styles.inputContainerTablet : undefined}
-            />
-          </View>
+        {/* Name */}
+        <View style={styles.section}>
+          <CustomTextInput
+            label="Name"
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter player name"
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+        </View>
 
-          <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <CustomTextInput
-              label="Nickname (Optional)"
-              value={nickname}
-              onChangeText={setNickname}
-              placeholder="Enter nickname"
-              autoCapitalize="words"
-              autoCorrect={false}
-              containerStyle={isTablet ? styles.inputContainerTablet : undefined}
-            />
-          </View>
+        {/* Nickname */}
+        <View style={styles.section}>
+          <CustomTextInput
+            label="Nickname (Optional)"
+            value={nickname}
+            onChangeText={setNickname}
+            placeholder="Enter nickname"
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+        </View>
 
-          <View style={isTablet ? styles.inputGroupTablet : styles.inputGroup}>
-            <Text style={isTablet ? styles.labelTablet : styles.label}>Gender</Text>
-            <View style={isTablet ? styles.genderContainerTablet : styles.genderContainer}>
-              {genderOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
+        {/* Gender */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Gender</Text>
+          <View style={styles.genderContainer}>
+            {genderOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.genderOption,
+                  gender === option.value && styles.genderOptionSelected,
+                ]}
+                onPress={() => setGender(option.value)}>
+                <Text
                   style={[
-                    isTablet ? styles.genderOptionTablet : styles.genderOption,
-                    gender === option.value && (isTablet ? styles.genderOptionSelectedTablet : styles.genderOptionSelected),
-                  ]}
-                  onPress={() => setGender(option.value)}>
-                  <Text
-                    style={[
-                      isTablet ? styles.genderOptionTextTablet : styles.genderOptionText,
-                      gender === option.value && (isTablet ? styles.genderOptionTextSelectedTablet : styles.genderOptionTextSelected),
-                    ]}>
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    styles.genderOptionText,
+                    gender === option.value && styles.genderOptionTextSelected,
+                  ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
+        </View>
 
-          {isEditing && player && (
-            <View style={isTablet ? styles.statsContainerTablet : styles.statsContainer}>
-              <Text style={isTablet ? styles.labelTablet : styles.label}>Current Stats</Text>
-              <View style={isTablet ? styles.statsRowTablet : styles.statsRow}>
-                <View style={isTablet ? styles.statItemTablet : styles.statItem}>
-                  <Text style={isTablet ? styles.statValueTablet : styles.statValue}>{player.wins}</Text>
-                  <Text style={isTablet ? styles.statLabelTablet : styles.statLabel}>Wins</Text>
-                </View>
-                <View style={isTablet ? styles.statItemTablet : styles.statItem}>
-                  <Text style={isTablet ? styles.statValueTablet : styles.statValue}>{player.losses}</Text>
-                  <Text style={isTablet ? styles.statLabelTablet : styles.statLabel}>Losses</Text>
-                </View>
-                <View style={isTablet ? styles.statItemTablet : styles.statItem}>
-                  <Text style={isTablet ? styles.statValueTablet : styles.statValue}>
-                    {player.wins + player.losses > 0
-                      ? `${Math.round((player.wins / (player.wins + player.losses)) * 100)}%`
-                      : '0%'}
-                  </Text>
-                  <Text style={isTablet ? styles.statLabelTablet : styles.statLabel}>Win Rate</Text>
-                </View>
+        {/* Stats (if editing) */}
+        {isEditing && player && (
+          <View style={styles.statsSection}>
+            <Text style={styles.sectionTitle}>Current Stats</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{player.wins}</Text>
+                <Text style={styles.statLabel}>Wins</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{player.losses}</Text>
+                <Text style={styles.statLabel}>Losses</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {player.wins + player.losses > 0
+                    ? `${Math.round((player.wins / (player.wins + player.losses)) * 100)}%`
+                    : '0%'}
+                </Text>
+                <Text style={styles.statLabel}>Win Rate</Text>
               </View>
             </View>
-          )}
-        </Card>
+          </View>
+        )}
       </ScrollView>
 
-      <View style={isTablet ? styles.buttonContainerTablet : styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
         <Button
           title={saving ? 'Saving...' : isEditing ? 'Update Player' : 'Add Player'}
           onPress={handleSave}
           loading={saving}
           disabled={saving}
-          size={isTablet ? "lg" : "md"}
         />
 
         {isEditing && (
@@ -332,7 +340,6 @@ const CreatePlayerScreen: React.FC<Props> = ({ navigation, route }) => {
             title="Delete Player"
             onPress={handleDelete}
             variant="outline"
-            size={isTablet ? "lg" : "md"}
             style={styles.deleteButton}
             textStyle={styles.deleteButtonText}
           />
@@ -346,175 +353,91 @@ const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background.coolGray,
+      backgroundColor: theme.colors.background.primary,
     },
     scrollView: {
       flex: 1,
     },
     content: {
-      padding: theme.spacing.lg,
+      paddingBottom: theme.spacing.xl,
     },
-    contentTablet: {
-      padding: theme.spacing.xl,
+    section: {
+      padding: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.subtle,
+    },
+    sectionTitle: {
+      ...theme.textStyles.overline,
+      color: theme.colors.text.tertiary,
+      marginBottom: theme.spacing.md,
+    },
+    profilePictureContainer: {
+      flexDirection: 'row',
       alignItems: 'center',
     },
-    form: {
-      flex: 1,
+    profilePictureButton: {
+      marginRight: theme.spacing.lg,
     },
-    formTablet: {
-      maxWidth: 600,
-      width: '100%',
-    },
-    inputGroup: {
-      marginBottom: theme.spacing.xl,
-    },
-    inputGroupTablet: {
-      marginBottom: theme.spacing['2xl'],
-    },
-    inputContainerTablet: {
-      marginBottom: 0,
-    },
-    label: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.sm,
-    },
-    labelTablet: {
-      ...theme.textStyles.h4,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.md,
+    profilePictureActions: {
+      flexDirection: 'column',
+      gap: theme.spacing.sm,
     },
     genderContainer: {
       flexDirection: 'row',
-      gap: theme.spacing.md,
-    },
-    genderContainerTablet: {
-      flexDirection: 'row',
-      gap: theme.spacing.lg,
+      gap: theme.spacing.sm,
     },
     genderOption: {
       flex: 1,
       padding: theme.spacing.md,
       borderWidth: 1,
-      borderColor: theme.colors.light.border,
+      borderColor: theme.colors.border.default,
       borderRadius: theme.borderRadius.md,
       alignItems: 'center',
-      backgroundColor: theme.colors.background.pureWhite,
-    },
-    genderOptionTablet: {
-      flex: 1,
-      padding: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.light.border,
-      borderRadius: theme.borderRadius.lg,
-      alignItems: 'center',
-      backgroundColor: theme.colors.background.pureWhite,
+      backgroundColor: theme.colors.card,
     },
     genderOptionSelected: {
-      backgroundColor: theme.colors.selection.primary,
-      borderColor: theme.colors.selection.primary,
-    },
-    genderOptionSelectedTablet: {
-      backgroundColor: theme.colors.selection.primary,
-      borderColor: theme.colors.selection.primary,
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
     genderOptionText: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.richBlack,
-      fontWeight: '500',
-    },
-    genderOptionTextTablet: {
       ...theme.textStyles.body,
-      color: theme.colors.text.richBlack,
-      fontWeight: '500',
+      color: theme.colors.text.primary,
+      fontWeight: theme.typography.fontWeights.medium,
     },
     genderOptionTextSelected: {
-      color: theme.colors.background.pureWhite,
+      color: '#FFFFFF',
     },
-    genderOptionTextSelectedTablet: {
-      color: theme.colors.background.pureWhite,
-    },
-    statsContainer: {
-      marginTop: theme.spacing.xl,
-      paddingTop: theme.spacing.xl,
-      borderTopWidth: 1,
-      borderTopColor: theme.colors.light.border,
-    },
-    statsContainerTablet: {
-      marginTop: theme.spacing['2xl'],
-      paddingTop: theme.spacing['2xl'],
-      borderTopWidth: 1,
-      borderTopColor: theme.colors.light.border,
+    statsSection: {
+      padding: theme.spacing.lg,
     },
     statsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-    },
-    statsRowTablet: {
       flexDirection: 'row',
       justifyContent: 'space-around',
     },
     statItem: {
       alignItems: 'center',
     },
-    statItemTablet: {
-      alignItems: 'center',
-    },
     statValue: {
       ...theme.textStyles.h3,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.xs,
-    },
-    statValueTablet: {
-      ...theme.textStyles.h2,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.sm,
+      color: theme.colors.text.primary,
+      marginBottom: 4,
     },
     statLabel: {
       ...theme.textStyles.caption,
-      color: theme.colors.text.darkGray,
-    },
-    statLabelTablet: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.tertiary,
     },
     buttonContainer: {
       padding: theme.spacing.lg,
-      gap: theme.spacing.md,
-    },
-    buttonContainerTablet: {
-      padding: theme.spacing.xl,
-      gap: theme.spacing.lg,
+      gap: theme.spacing.sm,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border.subtle,
     },
     deleteButton: {
-      borderColor: theme.colors.accent.errorRed,
+      borderColor: theme.colors.semantic.error,
     },
     deleteButtonText: {
-      color: theme.colors.accent.errorRed,
-    },
-    profilePictureContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    profilePictureContainerTablet: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: theme.spacing.sm,
-    },
-    profilePictureButton: {
-      padding: theme.spacing.sm,
-    },
-    profilePictureActions: {
-      flexDirection: 'column',
-      marginLeft: theme.spacing.xl,
-      gap: theme.spacing.sm,
-    },
-    profilePictureActionsTablet: {
-      flexDirection: 'row',
-      marginLeft: theme.spacing['2xl'],
-      gap: theme.spacing.md,
+      color: theme.colors.semantic.error,
     },
   });
 
-export default CreatePlayerScreen; 
+export default CreatePlayerScreen;

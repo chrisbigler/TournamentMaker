@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, PlayerGroup, SerializedPlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import { useTheme } from '../theme';
-import { Button, Card } from '../components';
+import type { Theme } from '../theme';
+import { Button, ScreenHeader } from '../components';
 import { MaterialIcons } from '@expo/vector-icons';
 
 type PlayerGroupsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'PlayerGroups'>;
@@ -26,6 +27,7 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
   const [groups, setGroups] = useState<PlayerGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   const loadGroups = async () => {
     try {
@@ -48,6 +50,7 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderGroup = ({ item }: { item: PlayerGroup }) => (
     <TouchableOpacity
+      style={styles.groupCard}
       onPress={() => navigation.navigate('CreatePlayerGroup', { 
         group: {
           ...item,
@@ -61,31 +64,25 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
         } as SerializedPlayerGroup
       })}
       activeOpacity={0.7}>
-      <Card variant="outlined" style={styles.groupCard}>
-        <View style={styles.groupInfo}>
-          <Text style={[styles.groupName, { color: theme.colors.text.richBlack }]}>{item.name}</Text>
-          <View style={styles.playerCountContainer}>
-            <MaterialIcons name="people" size={16} color={theme.colors.accent.infoBlue} />
-            <Text style={[styles.playerCount, { color: theme.colors.accent.infoBlue }]}>
-              {item.players.length} players
-            </Text>
-          </View>
-          <Text style={[styles.createdDate, { color: theme.colors.text.mediumGray }]}>
-            Created {item.createdAt.toLocaleDateString()}
-          </Text>
+      <View style={styles.groupInfo}>
+        <Text style={styles.groupName}>{item.name}</Text>
+        <View style={styles.playerCountContainer}>
+          <MaterialIcons name="people" size={14} color={theme.colors.primary} />
+          <Text style={styles.playerCount}>{item.players.length} players</Text>
         </View>
-        <View style={styles.groupActions}>
-          <Text style={[styles.editText, { color: theme.colors.action.tertiary }]}>Edit</Text>
-        </View>
-      </Card>
+        <Text style={styles.createdDate}>
+          Created {item.createdAt.toLocaleDateString()}
+        </Text>
+      </View>
+      <MaterialIcons name="chevron-right" size={20} color={theme.colors.text.tertiary} />
     </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MaterialIcons name="group-work" size={64} color={theme.colors.accent.infoBlue} style={styles.emptyIcon} />
-      <Text style={[styles.emptyStateTitle, { color: theme.colors.text.richBlack }]}>No Player Groups</Text>
-      <Text style={[styles.emptyStateText, { color: theme.colors.text.darkGray }]}>
+      <MaterialIcons name="group-work" size={48} color={theme.colors.primary} style={styles.emptyIcon} />
+      <Text style={styles.emptyStateTitle}>No Player Groups</Text>
+      <Text style={styles.emptyStateText}>
         Create player groups to quickly set up tournaments with the same people
       </Text>
       <Button
@@ -98,27 +95,25 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background.coolGray }]}>
-      <View style={[styles.header, { backgroundColor: theme.colors.background.pureWhite, borderBottomColor: theme.colors.light.border }]}>
-        <Text style={[styles.title, { color: theme.colors.text.richBlack }]}>Player Groups ({groups.length})</Text>
-        <Button
-          title="+ New Group"
-          onPress={() => navigation.navigate('CreatePlayerGroup', {})}
-          variant="secondary"
-          size="sm"
-        />
-      </View>
+    <SafeAreaView style={styles.container}>
+      <ScreenHeader
+        variant="list"
+        title="Player Groups"
+        count={groups.length}
+        onAdd={() => navigation.navigate('CreatePlayerGroup', {})}
+        addLabel="+ New"
+      />
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.colors.text.darkGray }]}>Loading groups...</Text>
+          <Text style={styles.loadingText}>Loading groups...</Text>
         </View>
       ) : (
         <FlatList
           data={groups}
           renderItem={renderGroup}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={groups.length === 0 ? styles.emptyContainer : styles.listContainer}
           ListEmptyComponent={renderEmptyState}
         />
       )}
@@ -126,84 +121,82 @@ const PlayerGroupsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  listContainer: {
-    padding: 16,
-  },
-  groupCard: {
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  groupInfo: {
-    flex: 1,
-  },
-  groupName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  playerCountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  playerCount: {
-    fontSize: 14,
-    marginLeft: 4,
-  },
-  createdDate: {
-    fontSize: 12,
-  },
-  groupActions: {
-    alignItems: 'flex-end',
-  },
-  editText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyIcon: {
-    marginBottom: 16,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.primary,
+    },
+    listContainer: {
+      padding: theme.spacing.lg,
+    },
+    emptyContainer: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: theme.spacing.lg,
+    },
+    groupCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      padding: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
+      ...theme.shadows.low,
+    },
+    groupInfo: {
+      flex: 1,
+    },
+    groupName: {
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+      marginBottom: 4,
+    },
+    playerCountContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+      gap: 4,
+    },
+    playerCount: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.primary,
+    },
+    createdDate: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyIcon: {
+      marginBottom: theme.spacing.md,
+    },
+    emptyStateTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.sm,
+    },
+    emptyStateText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: theme.spacing.xl,
+      paddingHorizontal: theme.spacing['3xl'],
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+    },
+  });
 
-export default PlayerGroupsScreen; 
+export default PlayerGroupsScreen;

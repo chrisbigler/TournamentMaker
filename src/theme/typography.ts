@@ -1,14 +1,14 @@
 export const typography = {
   fontSizes: {
-    xs: 12,
-    sm: 14,
-    base: 16,
-    lg: 18,
-    xl: 20,
-    '2xl': 24,
-    '3xl': 28,
-    '4xl': 32,
-    '5xl': 36,
+    xs: 11,
+    sm: 13,
+    base: 15,     // Slightly reduced from 16
+    lg: 17,
+    xl: 19,
+    '2xl': 22,
+    '3xl': 26,
+    '4xl': 28,    // Reduced from 32
+    '5xl': 32,
   },
   
   fontWeights: {
@@ -20,26 +20,35 @@ export const typography = {
   },
   
   lineHeights: {
-    xs: 16,
-    sm: 20,
-    base: 24,
-    lg: 28,
-    xl: 32,
-    '2xl': 36,
-    '3xl': 40,
-    '4xl': 44,
-    '5xl': 48,
+    xs: 14,
+    sm: 18,
+    base: 22,
+    lg: 24,
+    xl: 28,
+    '2xl': 30,
+    '3xl': 34,
+    '4xl': 36,
+    '5xl': 40,
   },
   
   letterSpacings: {
-    tight: -0.5,
-    normal: 0,
-    wide: 0.5,
-    wider: 1,
+    tighter: -0.5,  // Display headings
+    tight: -0.3,    // Headings
+    normal: 0,      // Body text
+    wide: 0.2,      // Labels, captions
+    wider: 0.5,     // All caps, buttons
   },
 } as const;
 
 export const textStyles = {
+  // Display (hero text)
+  display: {
+    fontSize: typography.fontSizes['5xl'],
+    fontWeight: typography.fontWeights.bold,
+    lineHeight: typography.lineHeights['5xl'],
+    letterSpacing: typography.letterSpacings.tighter,
+  },
+  
   // Headings
   h1: {
     fontSize: typography.fontSizes['4xl'],
@@ -49,7 +58,7 @@ export const textStyles = {
   },
   h2: {
     fontSize: typography.fontSizes['3xl'],
-    fontWeight: typography.fontWeights.bold,
+    fontWeight: typography.fontWeights.semibold,
     lineHeight: typography.lineHeights['3xl'],
     letterSpacing: typography.letterSpacings.tight,
   },
@@ -61,7 +70,7 @@ export const textStyles = {
   },
   h4: {
     fontSize: typography.fontSizes.xl,
-    fontWeight: typography.fontWeights.semibold,
+    fontWeight: typography.fontWeights.medium,
     lineHeight: typography.lineHeights.xl,
     letterSpacing: typography.letterSpacings.normal,
   },
@@ -103,14 +112,29 @@ export const textStyles = {
   // Button text
   button: {
     fontSize: typography.fontSizes.base,
-    fontWeight: typography.fontWeights.semibold,
+    fontWeight: typography.fontWeights.medium,
     lineHeight: typography.lineHeights.base,
+    letterSpacing: typography.letterSpacings.wide,
+  },
+  buttonSmall: {
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.medium,
+    lineHeight: typography.lineHeights.sm,
     letterSpacing: typography.letterSpacings.wide,
   },
   buttonLarge: {
     fontSize: typography.fontSizes.lg,
-    fontWeight: typography.fontWeights.semibold,
+    fontWeight: typography.fontWeights.medium,
     lineHeight: typography.lineHeights.lg,
     letterSpacing: typography.letterSpacings.wide,
   },
-} as const; 
+  
+  // Overline (small caps style)
+  overline: {
+    fontSize: typography.fontSizes.xs,
+    fontWeight: typography.fontWeights.semibold,
+    lineHeight: typography.lineHeights.xs,
+    letterSpacing: typography.letterSpacings.wider,
+    textTransform: 'uppercase' as const,
+  },
+} as const;

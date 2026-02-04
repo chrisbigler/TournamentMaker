@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   TouchableOpacity,
   Text,
@@ -6,6 +6,7 @@ import {
   ViewStyle,
   TextStyle,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
@@ -13,7 +14,7 @@ import type { Theme } from '../theme';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ghost' | 'outline';
+  variant?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
@@ -33,6 +34,26 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const theme = useTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+  
+  // Animation for press feedback
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  
+  const handlePressIn = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0.98,
+      duration: theme.animation.fast,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  const handlePressOut = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: theme.animation.fast,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const buttonStyle = [
     styles.base,
     styles[variant],
@@ -52,130 +73,126 @@ const Button: React.FC<ButtonProps> = ({
   const getLoadingColor = () => {
     switch (variant) {
       case 'primary':
-      case 'secondary':
-      case 'tertiary':
       case 'destructive':
-        return theme.colors.text.white;
+        return '#FFFFFF';
+      case 'secondary':
+        return theme.colors.primary;
       case 'outline':
-        return theme.colors.action.primary;
+        return theme.colors.text.secondary;
       case 'ghost':
-        return theme.colors.action.neutral;
+        return theme.colors.text.tertiary;
       default:
-        return theme.colors.text.white;
+        return '#FFFFFF';
     }
   };
 
   return (
-    <TouchableOpacity
-      style={buttonStyle}
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.8}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: disabled || loading }}>
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={getLoadingColor()}
-        />
-      ) : (
-        <Text style={textStyleCombined}>{title}</Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        style={buttonStyle}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+        activeOpacity={1}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: disabled || loading }}>
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={getLoadingColor()}
+          />
+        ) : (
+          <Text style={textStyleCombined}>{title}</Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  base: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.borderRadius.lg,
-    minHeight: theme.dimensions.touchableMinSize,
-  },
-  
-  // Variants - Updated for varied professional design
-  primary: {
-    backgroundColor: theme.colors.action.primary, // Blue for primary actions
-    ...theme.shadows.card,
-  },
-  secondary: {
-    backgroundColor: theme.colors.action.secondary, // Green for secondary actions
-    ...theme.shadows.card,
-  },
-  tertiary: {
-    backgroundColor: theme.colors.action.tertiary, // Orange for tertiary actions
-    ...theme.shadows.card,
-  },
-  destructive: {
-    backgroundColor: theme.colors.action.destructive, // Red for destructive actions
-    ...theme.shadows.card,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.colors.action.neutral,
-  },
-  
-  // Sizes
-  sm: {
-    height: theme.dimensions.buttonHeight.sm,
-    paddingHorizontal: theme.spacing.md,
-  },
-  md: {
-    height: theme.dimensions.buttonHeight.md,
-    paddingHorizontal: theme.spacing.xl,
-  },
-  lg: {
-    height: theme.dimensions.buttonHeight.lg,
-    paddingHorizontal: theme.spacing['2xl'],
-  },
-  
-  // States
-  disabled: {
-    opacity: 0.5,
-  },
-  
-  // Text styles - Updated for varied professional design
-  text: {
-    fontWeight: theme.textStyles.button.fontWeight,
-    letterSpacing: theme.textStyles.button.letterSpacing,
-  },
-  primaryText: {
-    color: theme.colors.text.white,
-  },
-  secondaryText: {
-    color: theme.colors.text.white,
-  },
-  tertiaryText: {
-    color: theme.colors.text.white,
-  },
-  destructiveText: {
-    color: theme.colors.text.white,
-  },
-  ghostText: {
-    color: theme.colors.action.neutral,
-  },
-  outlineText: {
-    color: theme.colors.action.neutral,
-  },
-  disabledText: {
-    opacity: 0.7,
-  },
-  
-  // Size-specific text
-  smText: {
-    fontSize: theme.textStyles.bodySmall.fontSize,
-  },
-  mdText: {
-    fontSize: theme.textStyles.button.fontSize,
-  },
-  lgText: {
-    fontSize: theme.textStyles.buttonLarge.fontSize,
-  },
+    base: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: theme.borderRadius.md,
+      minHeight: theme.dimensions.touchableMinSize,
+    },
+    
+    // Variants - Refined design
+    primary: {
+      backgroundColor: theme.colors.primary,
+    },
+    secondary: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+    },
+    destructive: {
+      backgroundColor: theme.colors.semantic.error,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
+    },
+    
+    // Sizes
+    sm: {
+      height: theme.dimensions.buttonHeight.sm,
+      paddingHorizontal: theme.spacing.md,
+    },
+    md: {
+      height: theme.dimensions.buttonHeight.md,
+      paddingHorizontal: theme.spacing.lg,
+    },
+    lg: {
+      height: theme.dimensions.buttonHeight.lg,
+      paddingHorizontal: theme.spacing.xl,
+    },
+    
+    // States
+    disabled: {
+      opacity: 0.5,
+    },
+    
+    // Text styles
+    text: {
+      fontWeight: theme.textStyles.button.fontWeight,
+      letterSpacing: theme.textStyles.button.letterSpacing,
+    },
+    primaryText: {
+      color: '#FFFFFF',
+    },
+    secondaryText: {
+      color: theme.colors.primary,
+    },
+    destructiveText: {
+      color: '#FFFFFF',
+    },
+    ghostText: {
+      color: theme.colors.text.secondary,
+    },
+    outlineText: {
+      color: theme.colors.text.primary,
+    },
+    disabledText: {
+      opacity: 0.7,
+    },
+    
+    // Size-specific text
+    smText: {
+      fontSize: theme.textStyles.buttonSmall.fontSize,
+    },
+    mdText: {
+      fontSize: theme.textStyles.button.fontSize,
+    },
+    lgText: {
+      fontSize: theme.textStyles.buttonLarge.fontSize,
+    },
   });
 
-export default Button; 
+export default Button;

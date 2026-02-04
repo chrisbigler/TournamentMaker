@@ -1,0 +1,843 @@
+# Tournament Maker Refactor Test Cases
+# Use these test scenarios to verify all changes from the refactor plan
+# Last updated: 2026-02-03
+
+meta:
+  version: "1.0.0"
+  plan_reference: "tournament_app_refactor_plan"
+  categories:
+    - performance
+    - ios_readiness
+    - visual_redesign
+
+---
+
+# =============================================================================
+# PHASE 1: PERFORMANCE OPTIMIZATIONS
+# =============================================================================
+
+performance:
+  database_layer:
+    
+    # -------------------------------------------------------------------------
+    # Test Suite: N+1 Query Fixes
+    # -------------------------------------------------------------------------
+    n1_query_fixes:
+      id: "db-n1-queries"
+      priority: critical
+      
+      test_cases:
+        - id: "DB-001"
+          name: "getTeamsForTournament uses single JOIN query"
+          description: "Verify teams are loaded with a single database query instead of N+1 calls"
+          preconditions:
+            - "Tournament exists with 8+ teams"
+            - "Database has player data for all team members"
+          steps:
+            - "Enable database query logging"
+            - "Call DatabaseService.getTeamsForTournament(tournamentId)"
+            - "Count the number of SQL queries executed"
+          expected_results:
+            - "Only 1 SQL query is executed (JOIN query)"
+            - "All team data including player1 and player2 is populated"
+            - "No individual getTeam() calls are made"
+          verification_query: |
+            SELECT t.*, 
+              p1.id as player1_id, p1.name as player1_name, p1.nickname as player1_nickname,
+              p2.id as player2_id, p2.name as player2_name, p2.nickname as player2_nickname
+            FROM teams t
+            LEFT JOIN players p1 ON t.player1_id = p1.id
+            LEFT JOIN players p2 ON t.player2_id = p2.id
+            WHERE t.tournament_id = ?
+
+        - id: "DB-002"
+          name: "getMatchesForTournament uses single JOIN query"
+          description: "Verify matches are loaded with team data in a single query"
+          preconditions:
+            - "Tournament exists with 7+ matches (8-team bracket)"
+            - "Matches have team1, team2, and some have winner assigned"
+          steps:
+            - "Enable database query logging"
+            - "Call DatabaseService.getMatchesForTournament(tournamentId)"
+            - "Count the number of SQL queries executed"
+          expected_results:
+            - "Only 1 SQL query is executed"
+            - "All match data includes team1, team2, and winner objects"
+            - "No individual getTeam() calls are made"
+          verification_query: |
+            SELECT m.*,
+              t1.id as team1_id, t1.name as team1_name,
+              t2.id as team2_id, t2.name as team2_name,
+              tw.id as winner_id, tw.name as winner_name
+            FROM matches m
+            LEFT JOIN teams t1 ON m.team1_id = t1.id
+            LEFT JOIN teams t2 ON m.team2_id = t2.id
+            LEFT JOIN teams tw ON m.winner_id = tw.id
+            WHERE m.tournament_id = ?
+
+        - id: "DB-003"
+          name: "getAllTournaments loads data efficiently"
+          description: "Verify tournament list loads without cascading N+1 queries"
+          preconditions:
+            - "Database has 10+ tournaments"
+            - "Each tournament has 4-8 teams and corresponding matches"
+          steps:
+            - "Enable database query logging"
+            - "Call DatabaseService.getAllTournaments()"
+            - "Count total SQL queries executed"
+          expected_results:
+            - "Maximum 3 queries total (tournaments, teams batch, matches batch)"
+            - "Load time under 500ms for 10 tournaments"
+            - "All tournament objects are fully populated"
+
+        - id: "DB-004"
+          name: "Performance benchmark - 20 team tournament"
+          description: "Verify acceptable performance with larger tournament"
+          preconditions:
+            - "Create tournament with 20 teams (19 matches)"
+          steps:
+            - "Measure time to call getTeamsForTournament()"
+            - "Measure time to call getMatchesForTournament()"
+            - "Measure time to load full tournament screen"
+          expected_results:
+            - "getTeamsForTournament() < 100ms"
+            - "getMatchesForTournament() < 150ms"
+            - "TournamentScreen renders < 500ms"
+          performance_thresholds:
+            teams_load_ms: 100
+            matches_load_ms: 150
+            screen_render_ms: 500
+
+    # -------------------------------------------------------------------------
+    # Test Suite: Database Indexes
+    # -------------------------------------------------------------------------
+    database_indexes:
+      id: "db-indexes"
+      priority: high
+      
+      test_cases:
+        - id: "DB-005"
+          name: "Index exists on teams.tournament_id"
+          description: "Verify index is created for tournament_id foreign key"
+          steps:
+            - "Query SQLite schema for teams table indexes"
+            - "Verify index on tournament_id column exists"
+          expected_results:
+            - "Index 'idx_teams_tournament_id' exists"
+          verification_query: |
+            SELECT name FROM sqlite_master 
+            WHERE type='index' AND tbl_name='teams' 
+            AND sql LIKE '%tournament_id%'
+
+        - id: "DB-006"
+          name: "Index exists on matches.tournament_id"
+          description: "Verify index is created for matches tournament_id"
+          steps:
+            - "Query SQLite schema for matches table indexes"
+          expected_results:
+            - "Index 'idx_matches_tournament_id' exists"
+
+        - id: "DB-007"
+          name: "Index exists on matches.team1_id and team2_id"
+          description: "Verify indexes for team foreign keys in matches"
+          steps:
+            - "Query SQLite schema for matches table indexes"
+          expected_results:
+            - "Index on team1_id exists"
+            - "Index on team2_id exists"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: TournamentService Optimization
+  # ---------------------------------------------------------------------------
+  tournament_service:
+    id: "tournament-service-fix"
+    priority: critical
+    
+    test_cases:
+      - id: "TS-001"
+        name: "fixPlayerStatistics uses Map for player lookup"
+        description: "Verify getAllPlayers() is called once, not per match"
+        preconditions:
+          - "Database has 20+ players"
+          - "10+ completed tournaments with matches"
+        steps:
+          - "Add instrumentation to count getAllPlayers() calls"
+          - "Call TournamentService.fixPlayerStatistics()"
+          - "Count total getAllPlayers() invocations"
+        expected_results:
+          - "getAllPlayers() called exactly 1 time"
+          - "Player lookup uses Map.get() for O(1) access"
+          - "Function completes in < 2 seconds for 100 matches"
+
+      - id: "TS-002"
+        name: "Player statistics calculated correctly after fix"
+        description: "Verify stats are accurate after refactoring"
+        preconditions:
+          - "Player A has won 5 matches, lost 3"
+          - "Player B has won 2 matches, lost 6"
+        steps:
+          - "Reset player statistics to 0"
+          - "Call fixPlayerStatistics()"
+          - "Query player stats from database"
+        expected_results:
+          - "Player A: wins=5, losses=3"
+          - "Player B: wins=2, losses=6"
+          - "All player stats match actual match history"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: React Memoization
+  # ---------------------------------------------------------------------------
+  react_memoization:
+    id: "react-memoization"
+    priority: high
+    
+    test_cases:
+      - id: "MEMO-001"
+        name: "TournamentScreen renderMatch is memoized"
+        file: "src/screens/TournamentScreen.tsx"
+        description: "Verify renderMatch uses useCallback"
+        steps:
+          - "Open TournamentScreen with 8+ matches"
+          - "Use React DevTools Profiler"
+          - "Trigger unrelated state change (e.g., scroll)"
+          - "Observe re-render count for match cards"
+        expected_results:
+          - "renderMatch wrapped in useCallback"
+          - "Match cards do not re-render on scroll"
+          - "Dependencies array includes only necessary values"
+
+      - id: "MEMO-002"
+        name: "TournamentScreen computed values use useMemo"
+        file: "src/screens/TournamentScreen.tsx"
+        description: "Verify bracketStructure and rounds are memoized"
+        steps:
+          - "Profile TournamentScreen render cycles"
+          - "Verify useMemo wraps getBracketStructure call"
+          - "Verify useMemo wraps rounds computation"
+        expected_results:
+          - "bracketStructure computed only when tournament.matches changes"
+          - "rounds array computed only when bracketStructure changes"
+
+      - id: "MEMO-003"
+        name: "CreateTournamentScreen renderPlayer is memoized"
+        file: "src/screens/CreateTournamentScreen.tsx"
+        description: "Verify player list items don't re-render unnecessarily"
+        steps:
+          - "Open CreateTournamentScreen with 20+ players"
+          - "Select one player"
+          - "Profile re-renders using React DevTools"
+        expected_results:
+          - "Only selected player card re-renders"
+          - "Other player cards maintain referential equality"
+          - "renderPlayer uses useCallback with [selectedPlayers, theme] deps"
+
+      - id: "MEMO-004"
+        name: "PlayersScreen renderPlayer is memoized"
+        file: "src/screens/PlayersScreen.tsx"
+        description: "Verify player list performance with search"
+        steps:
+          - "Load PlayersScreen with 50+ players"
+          - "Type in search field"
+          - "Profile render performance"
+        expected_results:
+          - "renderPlayer wrapped in useCallback"
+          - "getBadgeForPlayer wrapped in useCallback or useMemo"
+          - "Filtered list renders in < 100ms"
+
+      - id: "MEMO-005"
+        name: "TournamentHistoryScreen renderItem is memoized"
+        file: "src/screens/TournamentHistoryScreen.tsx"
+        description: "Verify tournament list items use memoization"
+        steps:
+          - "Load history with 20+ tournaments"
+          - "Apply search filter"
+          - "Profile re-renders"
+        expected_results:
+          - "renderTournamentItem uses useCallback"
+          - "Helper functions (formatDate, etc.) memoized"
+          - "Filter change re-renders only affected items"
+
+      - id: "MEMO-006"
+        name: "CreatePlayerGroupScreen renderPlayer is memoized"
+        file: "src/screens/CreatePlayerGroupScreen.tsx"
+        description: "Verify player selection list is optimized"
+        steps:
+          - "Open with 30+ players"
+          - "Toggle player selection"
+          - "Profile render performance"
+        expected_results:
+          - "renderPlayer wrapped in useCallback"
+          - "Selection toggle re-renders only affected item"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: AppNavigator Optimization
+  # ---------------------------------------------------------------------------
+  navigator_optimization:
+    id: "navigator-extract"
+    priority: medium
+    
+    test_cases:
+      - id: "NAV-001"
+        name: "CreateTournamentButton extracted from AppNavigator"
+        file: "src/navigation/AppNavigator.tsx"
+        description: "Verify button component is defined outside render"
+        steps:
+          - "Inspect AppNavigator.tsx"
+          - "Verify CreateTournamentButton is a separate component"
+          - "Verify it's wrapped in React.memo or defined outside"
+        expected_results:
+          - "CreateTournamentButton defined outside AppNavigator function"
+          - "Or wrapped in React.memo with stable props"
+          - "No inline component definition in headerRight"
+
+      - id: "NAV-002"
+        name: "ThemeToggle not recreated on navigation"
+        description: "Verify ThemeToggle doesn't cause header re-renders"
+        steps:
+          - "Navigate between tabs"
+          - "Profile header component renders"
+        expected_results:
+          - "ThemeToggle component maintains referential equality"
+          - "Header does not re-render on tab changes"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Console Log Removal
+  # ---------------------------------------------------------------------------
+  console_log_cleanup:
+    id: "remove-console-logs"
+    priority: low
+    
+    test_cases:
+      - id: "LOG-001"
+        name: "DatabaseService console.log statements removed"
+        file: "src/services/DatabaseService.ts"
+        description: "Verify no console.log in production code"
+        steps:
+          - "Search DatabaseService.ts for console.log"
+          - "Count occurrences"
+        expected_results:
+          - "Zero console.log statements in file"
+          - "Or all wrapped in __DEV__ conditional"
+
+      - id: "LOG-002"
+        name: "TournamentService console.log statements removed"
+        file: "src/services/TournamentService.ts"
+        description: "Verify no console.log in production code"
+        steps:
+          - "Search TournamentService.ts for console.log"
+        expected_results:
+          - "Zero console.log statements"
+          - "Or all wrapped in __DEV__ conditional"
+
+# =============================================================================
+# PHASE 2: iOS LAUNCH READINESS
+# =============================================================================
+
+ios_readiness:
+  
+  # ---------------------------------------------------------------------------
+  # Test Suite: iOS Permissions
+  # ---------------------------------------------------------------------------
+  permissions:
+    id: "ios-permissions"
+    priority: critical
+    
+    test_cases:
+      - id: "IOS-001"
+        name: "NSPhotoLibraryUsageDescription present in Info.plist"
+        file: "ios/TournamentMaker/Info.plist"
+        description: "Verify photo library permission description exists"
+        steps:
+          - "Open Info.plist"
+          - "Search for NSPhotoLibraryUsageDescription key"
+        expected_results:
+          - "Key NSPhotoLibraryUsageDescription exists"
+          - "Value is non-empty descriptive string"
+          - "Value explains why photo access is needed"
+
+      - id: "IOS-002"
+        name: "NSCameraUsageDescription present in Info.plist"
+        file: "ios/TournamentMaker/Info.plist"
+        description: "Verify camera permission description exists"
+        steps:
+          - "Open Info.plist"
+          - "Search for NSCameraUsageDescription key"
+        expected_results:
+          - "Key NSCameraUsageDescription exists"
+          - "Value is non-empty descriptive string"
+
+      - id: "IOS-003"
+        name: "Photo library permission prompt on device"
+        description: "Verify permission dialog appears on first use"
+        preconditions:
+          - "Fresh app install on iOS device/simulator"
+          - "Photo library permission not previously granted"
+        steps:
+          - "Launch app"
+          - "Navigate to Create Player screen"
+          - "Tap to select profile picture from library"
+        expected_results:
+          - "System permission dialog appears"
+          - "Dialog shows custom description from Info.plist"
+          - "App handles both allow and deny responses"
+
+      - id: "IOS-004"
+        name: "Camera permission prompt on device"
+        description: "Verify camera permission dialog appears"
+        preconditions:
+          - "Fresh app install"
+          - "Camera permission not previously granted"
+        steps:
+          - "Navigate to Create Player screen"
+          - "Tap to take photo with camera"
+        expected_results:
+          - "System permission dialog appears"
+          - "Dialog shows custom description"
+          - "App handles allow/deny gracefully"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Bundle Identifier
+  # ---------------------------------------------------------------------------
+  bundle_identifier:
+    id: "ios-bundle-id"
+    priority: critical
+    
+    test_cases:
+      - id: "IOS-005"
+        name: "Bundle identifier matches across configurations"
+        description: "Verify app.json and Xcode project have same bundle ID"
+        files:
+          - "app.json"
+          - "ios/TournamentMaker.xcodeproj/project.pbxproj"
+        steps:
+          - "Read ios.bundleIdentifier from app.json"
+          - "Read PRODUCT_BUNDLE_IDENTIFIER from project.pbxproj"
+          - "Compare values"
+        expected_results:
+          - "Both values are identical"
+          - "Format: reverse domain (e.g., com.company.tournamentmaker)"
+
+      - id: "IOS-006"
+        name: "App builds successfully with aligned bundle ID"
+        description: "Verify app compiles after bundle ID fix"
+        steps:
+          - "Run: cd ios && pod install"
+          - "Run: npx expo run:ios"
+        expected_results:
+          - "Pod install succeeds"
+          - "Build completes without signing errors"
+          - "App launches on simulator"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Privacy Manifest
+  # ---------------------------------------------------------------------------
+  privacy_manifest:
+    id: "ios-privacy-manifest"
+    priority: high
+    
+    test_cases:
+      - id: "IOS-007"
+        name: "PrivacyInfo.xcprivacy file exists"
+        file: "ios/TournamentMaker/PrivacyInfo.xcprivacy"
+        description: "Verify privacy manifest is created"
+        steps:
+          - "Check for file existence"
+          - "Validate XML structure"
+        expected_results:
+          - "File exists at ios/TournamentMaker/PrivacyInfo.xcprivacy"
+          - "Valid XML/plist format"
+
+      - id: "IOS-008"
+        name: "Privacy manifest declares required APIs"
+        description: "Verify manifest includes required reason API declarations"
+        steps:
+          - "Parse PrivacyInfo.xcprivacy"
+          - "Check for NSPrivacyAccessedAPITypes array"
+          - "Verify NSPrivacyTracking is set appropriately"
+        expected_results:
+          - "NSPrivacyTracking = false (no tracking)"
+          - "NSPrivacyAccessedAPITypes includes file system APIs if used"
+          - "NSPrivacyCollectedDataTypes declared (or empty if none)"
+
+      - id: "IOS-009"
+        name: "Privacy manifest included in Xcode project"
+        description: "Verify manifest is properly linked in project"
+        steps:
+          - "Open Xcode project"
+          - "Check Build Phases > Copy Bundle Resources"
+        expected_results:
+          - "PrivacyInfo.xcprivacy listed in bundle resources"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: iOS Configuration
+  # ---------------------------------------------------------------------------
+  ios_config:
+    id: "ios-config"
+    priority: medium
+    
+    test_cases:
+      - id: "IOS-010"
+        name: "app.json has encryption compliance setting"
+        file: "app.json"
+        description: "Verify usesNonExemptEncryption is declared"
+        steps:
+          - "Read app.json"
+          - "Check ios.config.usesNonExemptEncryption"
+        expected_results:
+          - "usesNonExemptEncryption = false"
+          - "No export compliance prompt on App Store submission"
+
+      - id: "IOS-011"
+        name: "app.json has buildNumber configured"
+        file: "app.json"
+        description: "Verify build number is set for versioning"
+        steps:
+          - "Read app.json"
+          - "Check ios.buildNumber"
+        expected_results:
+          - "buildNumber is string (e.g., '1')"
+          - "Can be incremented for each build"
+
+      - id: "IOS-012"
+        name: "Tablet support configured correctly"
+        file: "app.json"
+        description: "Verify iPad support settings"
+        steps:
+          - "Check ios.supportsTablet in app.json"
+        expected_results:
+          - "supportsTablet = true or false (explicit choice)"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Version Synchronization
+  # ---------------------------------------------------------------------------
+  version_sync:
+    id: "version-sync"
+    priority: medium
+    
+    test_cases:
+      - id: "IOS-013"
+        name: "Version numbers aligned across all files"
+        description: "Verify consistent versioning"
+        files:
+          - "package.json"
+          - "app.json"
+          - "ios/TournamentMaker/Info.plist"
+        steps:
+          - "Read version from package.json"
+          - "Read expo.version from app.json"
+          - "Read CFBundleShortVersionString from Info.plist"
+          - "Compare all values"
+        expected_results:
+          - "All three files show same version (e.g., '1.0.0')"
+          - "Version follows semver format"
+
+# =============================================================================
+# PHASE 3: VISUAL REDESIGN
+# =============================================================================
+
+visual_redesign:
+  
+  # ---------------------------------------------------------------------------
+  # Test Suite: MenuItem Color Fix
+  # ---------------------------------------------------------------------------
+  menuitem_color:
+    id: "color-menuitem"
+    priority: high
+    
+    test_cases:
+      - id: "VIS-001"
+        name: "MenuItem primary variant uses Electric Blue"
+        file: "src/components/MenuItem.tsx"
+        description: "Verify primary variant uses action.primary not action.secondary"
+        steps:
+          - "Open MenuItem.tsx"
+          - "Find primary variant background color"
+          - "Verify it references theme.colors.action.primary"
+        expected_results:
+          - "Primary variant backgroundColor = theme.colors.action.primary"
+          - "Renders as Electric Blue (#3B82F6)"
+          - "Not green (#059669)"
+
+      - id: "VIS-002"
+        name: "MenuItem primary variant visual verification"
+        description: "Verify primary menu items appear blue on screen"
+        steps:
+          - "Navigate to screen with primary MenuItem"
+          - "Take screenshot"
+          - "Compare color to #3B82F6"
+        expected_results:
+          - "MenuItem background is Electric Blue"
+          - "Text is white for contrast"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Button Tertiary Removal
+  # ---------------------------------------------------------------------------
+  button_cleanup:
+    id: "color-button"
+    priority: medium
+    
+    test_cases:
+      - id: "VIS-003"
+        name: "Button tertiary variant removed"
+        file: "src/components/Button.tsx"
+        description: "Verify deprecated tertiary variant is removed"
+        steps:
+          - "Open Button.tsx"
+          - "Search for 'tertiary' in variant types"
+          - "Search for tertiary style definitions"
+        expected_results:
+          - "No 'tertiary' in ButtonVariant type"
+          - "No tertiary case in getVariantStyles"
+          - "TypeScript error if tertiary used anywhere"
+
+      - id: "VIS-004"
+        name: "No tertiary Button usage in codebase"
+        description: "Verify no components use tertiary variant"
+        steps:
+          - "Search all .tsx files for variant='tertiary' or variant=\"tertiary\""
+          - "Search for Button components with tertiary prop"
+        expected_results:
+          - "Zero matches for tertiary button usage"
+          - "Any previous tertiary usage replaced with ghost or other"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: HomeScreen Color Fix
+  # ---------------------------------------------------------------------------
+  homescreen_color:
+    id: "color-homescreen"
+    priority: high
+    
+    test_cases:
+      - id: "VIS-005"
+        name: "HomeScreen Create Tournament uses action.primary"
+        file: "src/screens/HomeScreen.tsx"
+        description: "Verify main CTA button uses Electric Blue"
+        steps:
+          - "Open HomeScreen.tsx"
+          - "Find Create Tournament button/card"
+          - "Check background color reference"
+        expected_results:
+          - "Uses theme.colors.action.primary"
+          - "Not theme.colors.action.secondary (green)"
+
+      - id: "VIS-006"
+        name: "HomeScreen visual verification"
+        description: "Verify Create Tournament button appears blue"
+        steps:
+          - "Launch app to HomeScreen"
+          - "Locate Create Tournament action"
+          - "Verify color visually"
+        expected_results:
+          - "Create Tournament button is Electric Blue (#3B82F6)"
+          - "Consistent with other primary actions"
+
+  # ---------------------------------------------------------------------------
+  # Test Suite: Component Exports
+  # ---------------------------------------------------------------------------
+  component_exports:
+    id: "component-exports"
+    priority: low
+    
+    test_cases:
+      - id: "VIS-007"
+        name: "ProfilePicture exported from index"
+        file: "src/components/index.ts"
+        description: "Verify ProfilePicture is exported"
+        steps:
+          - "Open src/components/index.ts"
+          - "Check for ProfilePicture export"
+        expected_results:
+          - "export { ProfilePicture } from './ProfilePicture' exists"
+          - "Can import { ProfilePicture } from '@/components'"
+
+      - id: "VIS-008"
+        name: "ThemeToggle exported from index"
+        file: "src/components/index.ts"
+        description: "Verify ThemeToggle is exported"
+        steps:
+          - "Open src/components/index.ts"
+          - "Check for ThemeToggle export"
+        expected_results:
+          - "export { ThemeToggle } from './ThemeToggle' exists"
+
+      - id: "VIS-009"
+        name: "All components importable from index"
+        description: "Verify clean imports work"
+        steps:
+          - "Create test file importing all components from index"
+          - "Verify no TypeScript errors"
+        expected_results:
+          - "import { Button, Card, MenuItem, TextInput, ProfilePicture, ThemeToggle } from '@/components'"
+          - "All imports resolve correctly"
+
+# =============================================================================
+# INTEGRATION TESTS
+# =============================================================================
+
+integration:
+  
+  # ---------------------------------------------------------------------------
+  # End-to-End Scenarios
+  # ---------------------------------------------------------------------------
+  e2e_scenarios:
+    priority: high
+    
+    test_cases:
+      - id: "E2E-001"
+        name: "Full tournament flow with optimized database"
+        description: "Verify complete tournament works after DB refactor"
+        steps:
+          - "Create 8 players"
+          - "Create tournament with all 8 players"
+          - "Generate teams (boy/girl mode)"
+          - "View bracket"
+          - "Score all matches through to champion"
+          - "Verify player stats updated"
+        expected_results:
+          - "All screens load under 500ms"
+          - "No visual glitches"
+          - "Stats accurate after completion"
+          - "Tournament appears in history"
+
+      - id: "E2E-002"
+        name: "Large tournament performance"
+        description: "Verify performance with maximum players"
+        preconditions:
+          - "32 players in database"
+        steps:
+          - "Create tournament with 32 players"
+          - "Generate 16 teams"
+          - "View bracket (31 matches)"
+          - "Navigate between rounds"
+        expected_results:
+          - "Bracket renders in < 1 second"
+          - "Smooth scrolling (60fps)"
+          - "No memory warnings"
+
+      - id: "E2E-003"
+        name: "iOS permission flow"
+        description: "Verify complete image picker flow on iOS"
+        platform: ios
+        steps:
+          - "Fresh install app"
+          - "Create new player"
+          - "Tap profile picture"
+          - "Select 'Choose from Library'"
+          - "Grant permission when prompted"
+          - "Select photo"
+          - "Save player"
+        expected_results:
+          - "Permission dialog shows custom message"
+          - "Photo picker opens after permission"
+          - "Selected photo displays as profile picture"
+          - "Photo persists after app restart"
+
+      - id: "E2E-004"
+        name: "Theme consistency across app"
+        description: "Verify design consistency after color fixes"
+        steps:
+          - "Navigate through all screens"
+          - "Note color of primary action buttons"
+          - "Toggle dark mode"
+          - "Navigate through all screens again"
+        expected_results:
+          - "All primary CTAs are Electric Blue (#3B82F6)"
+          - "No green primary buttons"
+          - "Dark mode colors consistent"
+          - "No white text on white backgrounds"
+
+# =============================================================================
+# REGRESSION TESTS
+# =============================================================================
+
+regression:
+  
+  test_cases:
+    - id: "REG-001"
+      name: "Existing tournaments still load"
+      description: "Verify DB changes don't break existing data"
+      preconditions:
+        - "Database has tournaments created before refactor"
+      steps:
+        - "Open app after refactor"
+        - "View tournament history"
+        - "Open existing tournament"
+      expected_results:
+        - "All existing tournaments visible"
+        - "Bracket displays correctly"
+        - "Match scores preserved"
+
+    - id: "REG-002"
+      name: "Player statistics preserved"
+      description: "Verify stats not corrupted by changes"
+      preconditions:
+        - "Players have existing win/loss records"
+      steps:
+        - "Note current player stats"
+        - "Apply refactor changes"
+        - "Check player stats"
+      expected_results:
+        - "Win/loss counts unchanged"
+        - "No data loss"
+
+    - id: "REG-003"
+      name: "Profile pictures still work"
+      description: "Verify image service unaffected"
+      preconditions:
+        - "Players have profile pictures saved"
+      steps:
+        - "View players list"
+        - "Open player with profile picture"
+      expected_results:
+        - "Profile pictures display"
+        - "No broken image placeholders"
+
+# =============================================================================
+# TEST EXECUTION METADATA
+# =============================================================================
+
+execution:
+  
+  manual_tests:
+    - "IOS-003"  # Permission prompt
+    - "IOS-004"  # Camera permission
+    - "VIS-002"  # Visual verification
+    - "VIS-006"  # Visual verification
+    - "E2E-001"  # Full flow
+    - "E2E-003"  # iOS permission flow
+    - "E2E-004"  # Theme consistency
+  
+  automated_tests:
+    - "DB-001" through "DB-007"  # Database queries
+    - "TS-001", "TS-002"  # Service logic
+    - "IOS-005", "IOS-007", "IOS-010", "IOS-013"  # File checks
+    - "VIS-003", "VIS-004", "VIS-007", "VIS-008"  # Code inspection
+    - "LOG-001", "LOG-002"  # Code search
+  
+  profiling_tests:
+    - "DB-004"  # Performance benchmark
+    - "MEMO-001" through "MEMO-006"  # React profiling
+    - "E2E-002"  # Large tournament
+  
+  priority_order:
+    critical:
+      - "IOS-001"  # Photo permission (App Store blocker)
+      - "IOS-002"  # Camera permission (App Store blocker)
+      - "IOS-005"  # Bundle ID (Build blocker)
+      - "DB-001"   # N+1 fix (Performance critical)
+      - "DB-002"   # N+1 fix (Performance critical)
+      - "TS-001"   # Service fix (Performance critical)
+    high:
+      - "IOS-007"  # Privacy manifest
+      - "MEMO-001" through "MEMO-006"  # Memoization
+      - "VIS-001"  # Color fix
+      - "VIS-005"  # HomeScreen color
+    medium:
+      - "IOS-010", "IOS-011", "IOS-012"  # iOS config
+      - "IOS-013"  # Version sync
+      - "NAV-001", "NAV-002"  # Navigator
+      - "VIS-003"  # Button cleanup
+    low:
+      - "DB-005" through "DB-007"  # Indexes
+      - "LOG-001", "LOG-002"  # Console cleanup
+      - "VIS-007" through "VIS-009"  # Exports

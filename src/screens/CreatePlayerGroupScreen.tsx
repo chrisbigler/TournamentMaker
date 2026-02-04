@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,8 @@ import { RootStackParamList, PlayerGroup, Player, SerializedPlayerGroup } from '
 import DatabaseService from '../services/DatabaseService';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
-import { Button, Card, TextInput as CustomTextInput } from '../components';
+import { Button, Card, ScreenHeader } from '../components';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type CreatePlayerGroupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreatePlayerGroup'>;
 type CreatePlayerGroupScreenRouteProp = RouteProp<RootStackParamList, 'CreatePlayerGroup'>;
@@ -30,7 +31,6 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
   const { group } = route.params || {};
   const isEditing = !!group;
 
-  // Convert serialized players back to Player objects
   const initialPlayers: Player[] = group?.players.map(p => ({
     ...p,
     createdAt: new Date(p.createdAt),
@@ -66,7 +66,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  const togglePlayerSelection = (player: Player) => {
+  const togglePlayerSelection = useCallback((player: Player) => {
     setSelectedPlayers(prev => {
       const isSelected = prev.some(p => p.id === player.id);
       if (isSelected) {
@@ -75,7 +75,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
         return [...prev, player];
       }
     });
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!groupName.trim()) {
@@ -92,14 +92,12 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
       setSaving(true);
 
       if (isEditing && group) {
-        // Update existing group
         await DatabaseService.updatePlayerGroup(
           group.id,
           groupName.trim(),
           selectedPlayers.map(p => p.id)
         );
       } else {
-        // Create new group
         await DatabaseService.createPlayerGroup(
           groupName.trim(),
           selectedPlayers.map(p => p.id)
@@ -149,7 +147,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   };
 
-  const renderPlayer = ({ item }: { item: Player }) => {
+  const renderPlayer = useCallback(({ item }: { item: Player }) => {
     const isSelected = selectedPlayers.some(p => p.id === item.id);
     
     return (
@@ -162,20 +160,16 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
             {item.name}
           </Text>
           {item.nickname && (
-            <Text style={[styles.playerNickname, isSelected && styles.playerNicknameSelected]}>
-              "{item.nickname}"
-            </Text>
+            <Text style={styles.playerNickname}>"{item.nickname}"</Text>
           )}
-          <Text style={[styles.playerGender, isSelected && styles.playerGenderSelected]}>
-            {item.gender}
-          </Text>
+          <Text style={styles.playerGender}>{item.gender}</Text>
         </View>
         <View style={[styles.selectionIndicator, isSelected && styles.selectionIndicatorSelected]}>
-          {isSelected && <Text style={styles.checkmark}>✓</Text>}
+          {isSelected && <MaterialIcons name="check" size={16} color="#FFFFFF" />}
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [selectedPlayers, styles, togglePlayerSelection]);
 
   if (loading) {
     return (
@@ -189,18 +183,31 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader
+        variant="create"
+        title={isEditing ? 'Edit Group' : 'New Group'}
+        subtitle={isEditing ? `Update "${group?.name}"` : 'Organize players for quick tournament setup'}
+        accentColor="#8B5CF6"
+        stats={[
+          { label: 'players available', value: allPlayers.length, icon: 'person' },
+        ]}
+      />
       <ScrollView style={styles.scrollView}>
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Group Name */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Group Name</Text>
-          <CustomTextInput
+          <TextInput
+            style={styles.input}
             value={groupName}
             onChangeText={setGroupName}
             placeholder="Enter group name"
+            placeholderTextColor={theme.colors.text.tertiary}
             autoCapitalize="words"
           />
-        </Card>
+        </View>
 
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Select Players */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Select Players ({selectedPlayers.length} selected)
           </Text>
@@ -224,7 +231,7 @@ const CreatePlayerGroupScreen: React.FC<Props> = ({ navigation, route }) => {
               scrollEnabled={false}
             />
           )}
-        </Card>
+        </View>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
@@ -253,89 +260,80 @@ const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background.coolGray,
+      backgroundColor: theme.colors.background.primary,
     },
     scrollView: {
       flex: 1,
     },
     section: {
-      margin: theme.spacing.lg,
+      padding: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.subtle,
     },
     sectionTitle: {
-      ...theme.textStyles.h4,
-      color: theme.colors.text.richBlack,
+      ...theme.textStyles.overline,
+      color: theme.colors.text.tertiary,
       marginBottom: theme.spacing.md,
+    },
+    input: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.primary,
+      backgroundColor: theme.colors.background.secondary,
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
+      borderRadius: theme.borderRadius.sm,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.md,
     },
     playerCard: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: theme.spacing.md,
       borderWidth: 1,
-      borderColor: theme.colors.light.border,
+      borderColor: theme.colors.border.subtle,
       borderRadius: theme.borderRadius.md,
       marginBottom: theme.spacing.sm,
-      backgroundColor: theme.colors.background.pureWhite,
+      backgroundColor: theme.colors.card,
     },
     playerCardSelected: {
-      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
-      borderColor: theme.colors.accent.successGreen,
-      borderWidth: 2,
-      shadowColor: theme.colors.accent.successGreen,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      backgroundColor: `${theme.colors.primary}10`,
+      borderColor: theme.colors.primary,
     },
     playerInfo: {
       flex: 1,
     },
     playerName: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.richBlack,
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
       marginBottom: 2,
     },
     playerNameSelected: {
-      color: theme.colors.text.richBlack,
-      fontWeight: '600',
+      color: theme.colors.primary,
     },
     playerNickname: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
       fontStyle: 'italic',
       marginBottom: 2,
     },
-    playerNicknameSelected: {
-      color: theme.colors.text.darkGray,
-      fontWeight: '500',
-    },
     playerGender: {
       ...theme.textStyles.caption,
-      color: theme.colors.text.mediumGray,
+      color: theme.colors.text.tertiary,
       textTransform: 'capitalize',
     },
-    playerGenderSelected: {
-      color: theme.colors.text.mediumGray,
-      fontWeight: '500',
-    },
     selectionIndicator: {
-      width: 32,
-      height: 32,
+      width: 24,
+      height: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 16,
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderColor: theme.colors.light.border,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
     },
     selectionIndicatorSelected: {
-      backgroundColor: theme.colors.accent.successGreen,
-      borderColor: theme.colors.accent.successGreen,
-    },
-    checkmark: {
-      ...theme.textStyles.body,
-      color: theme.colors.background.pureWhite,
-      fontWeight: 'bold',
-      fontSize: 16,
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
     emptyState: {
       alignItems: 'center',
@@ -343,19 +341,21 @@ const createStyles = (theme: Theme) =>
     },
     emptyStateText: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
       textAlign: 'center',
       marginBottom: theme.spacing.md,
     },
     buttonContainer: {
       padding: theme.spacing.lg,
       gap: theme.spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border.subtle,
     },
     deleteButton: {
-      borderColor: theme.colors.accent.errorRed,
+      borderColor: theme.colors.semantic.error,
     },
     deleteButtonText: {
-      color: theme.colors.accent.errorRed,
+      color: theme.colors.semantic.error,
     },
     loadingContainer: {
       flex: 1,
@@ -364,8 +364,8 @@ const createStyles = (theme: Theme) =>
     },
     loadingText: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
     },
   });
 
-export default CreatePlayerGroupScreen; 
+export default CreatePlayerGroupScreen;

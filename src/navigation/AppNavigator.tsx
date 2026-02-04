@@ -1,13 +1,14 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import React, { memo, useMemo } from 'react';
+import { NavigationContainer, useNavigationState } from '@react-navigation/native';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../types';
 import { useTheme } from '../theme';
 import { useThemeMode } from '../theme';
+import type { Theme } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import ThemeToggle from '../components/ThemeToggle';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
@@ -23,33 +24,93 @@ import TournamentHistoryScreen from '../screens/TournamentHistoryScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
-// Create stack navigators for each tab
-const HomeStack = () => {
+// Memoized ThemeToggle component for header
+const MemoizedThemeToggle = memo(ThemeToggle);
+const HeaderRight = memo(() => <MemoizedThemeToggle />);
+
+// Extracted and memoized CreateTournamentButton component
+interface CreateTournamentButtonProps {
+  onPress: () => void;
+  backgroundColor: string;
+  iconColor: string;
+}
+
+const CreateTournamentButton = memo(({ onPress, backgroundColor, iconColor }: CreateTournamentButtonProps) => (
+  <TouchableOpacity
+    style={[createTournamentButtonStyles.button, { backgroundColor }]}
+    onPress={onPress}
+    activeOpacity={0.85}
+  >
+    <MaterialIcons name="add" size={28} color={iconColor} />
+  </TouchableOpacity>
+));
+
+const createTournamentButtonStyles = StyleSheet.create({
+  button: {
+    top: -12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+});
+
+// Custom hook for header styles - refined design
+const useHeaderStyles = () => {
   const theme = useTheme();
   const { mode } = useThemeMode();
   
-  const headerStyle = {
-    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
-    ...theme.shadows.card,
-  };
-  
-  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  return useMemo(() => ({
+    headerStyle: {
+      backgroundColor: theme.colors.background.primary,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.subtle,
+      shadowColor: 'transparent',
+      shadowOpacity: 0,
+      elevation: 0,
+    },
+    headerTintColor: theme.colors.text.primary,
+    headerTitleStyle: {
+      fontWeight: theme.textStyles.h4.fontWeight,
+      fontSize: theme.textStyles.h4.fontSize,
+      color: theme.colors.text.primary,
+      letterSpacing: theme.typography.letterSpacings.tight,
+    },
+    cardStyle: {
+      backgroundColor: theme.colors.background.primary,
+    },
+    // Use platform-appropriate transitions for consistency
+    // iOS: slide from right, Android: fade with slight slide
+    ...Platform.select({
+      ios: TransitionPresets.SlideFromRightIOS,
+      android: TransitionPresets.FadeFromBottomAndroid,
+      default: TransitionPresets.SlideFromRightIOS,
+    }),
+  }), [theme, mode]);
+};
+
+// Create stack navigators for each tab
+const HomeStack = () => {
+  const { headerStyle, headerTintColor, headerTitleStyle, cardStyle } = useHeaderStyles();
   
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle,
         headerTintColor,
-        headerTitleStyle: {
-          fontWeight: theme.textStyles.h3.fontWeight,
-          fontSize: theme.textStyles.h3.fontSize,
-          color: headerTintColor,
-        },
+        headerTitleStyle,
         headerBackTitleVisible: false,
-        cardStyle: {
-          backgroundColor: theme.colors.background.coolGray,
-        },
-        headerRight: () => <ThemeToggle />, 
+        cardStyle,
+        headerRight: () => <HeaderRight />, 
       }}>
       <Stack.Screen
         name="HomeMain"
@@ -71,36 +132,32 @@ const HomeStack = () => {
         component={MatchScreen}
         options={{ title: 'Match' }}
       />
+      <Stack.Screen
+        name="CreatePlayer"
+        component={CreatePlayerScreen}
+        options={{ title: 'Add Player' }}
+      />
+      <Stack.Screen
+        name="CreatePlayerGroup"
+        component={CreatePlayerGroupScreen}
+        options={{ title: 'Create Group' }}
+      />
     </Stack.Navigator>
   );
 };
 
 const PlayersStack = () => {
-  const theme = useTheme();
-  const { mode } = useThemeMode();
-  
-  const headerStyle = {
-    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
-    ...theme.shadows.card,
-  };
-  
-  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  const { headerStyle, headerTintColor, headerTitleStyle, cardStyle } = useHeaderStyles();
   
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle,
         headerTintColor,
-        headerTitleStyle: {
-          fontWeight: theme.textStyles.h3.fontWeight,
-          fontSize: theme.textStyles.h3.fontSize,
-          color: headerTintColor,
-        },
+        headerTitleStyle,
         headerBackTitleVisible: false,
-        cardStyle: {
-          backgroundColor: theme.colors.background.coolGray,
-        },
-        headerRight: () => <ThemeToggle />,
+        cardStyle,
+        headerRight: () => <HeaderRight />,
       }}>
       <Stack.Screen
         name="PlayersMain"
@@ -117,31 +174,17 @@ const PlayersStack = () => {
 };
 
 const PlayerGroupsStack = () => {
-  const theme = useTheme();
-  const { mode } = useThemeMode();
-  
-  const headerStyle = {
-    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
-    ...theme.shadows.card,
-  };
-  
-  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  const { headerStyle, headerTintColor, headerTitleStyle, cardStyle } = useHeaderStyles();
   
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle,
         headerTintColor,
-        headerTitleStyle: {
-          fontWeight: theme.textStyles.h3.fontWeight,
-          fontSize: theme.textStyles.h3.fontSize,
-          color: headerTintColor,
-        },
+        headerTitleStyle,
         headerBackTitleVisible: false,
-        cardStyle: {
-          backgroundColor: theme.colors.background.coolGray,
-        },
-        headerRight: () => <ThemeToggle />,
+        cardStyle,
+        headerRight: () => <HeaderRight />,
       }}>
       <Stack.Screen
         name="PlayerGroupsMain"
@@ -158,36 +201,32 @@ const PlayerGroupsStack = () => {
 };
 
 const HistoryStack = () => {
-  const theme = useTheme();
-  const { mode } = useThemeMode();
-  
-  const headerStyle = {
-    backgroundColor: mode === 'light' ? theme.colors.background.pureWhite : theme.colors.primary.deepNavy,
-    ...theme.shadows.card,
-  };
-  
-  const headerTintColor = mode === 'light' ? theme.colors.text.richBlack : theme.colors.text.white;
+  const { headerStyle, headerTintColor, headerTitleStyle, cardStyle } = useHeaderStyles();
   
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle,
         headerTintColor,
-        headerTitleStyle: {
-          fontWeight: theme.textStyles.h3.fontWeight,
-          fontSize: theme.textStyles.h3.fontSize,
-          color: headerTintColor,
-        },
+        headerTitleStyle,
         headerBackTitleVisible: false,
-        cardStyle: {
-          backgroundColor: theme.colors.background.coolGray,
-        },
-        headerRight: () => <ThemeToggle />,
+        cardStyle,
+        headerRight: () => <HeaderRight />,
       }}>
       <Stack.Screen
         name="TournamentHistoryMain"
         component={TournamentHistoryScreen}
         options={{ title: 'Tournament History' }}
+      />
+      <Stack.Screen
+        name="Tournament"
+        component={TournamentScreen}
+        options={{ title: 'Tournament' }}
+      />
+      <Stack.Screen
+        name="Match"
+        component={MatchScreen}
+        options={{ title: 'Match' }}
       />
     </Stack.Navigator>
   );
@@ -196,51 +235,39 @@ const HistoryStack = () => {
 const BottomTabNavigator = () => {
   const theme = useTheme();
 
-  // Custom plus button component
-  const CreateTournamentButton = ({ onPress }: { onPress: () => void }) => (
-    <TouchableOpacity
-      style={{
-        top: -15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: theme.colors.action.secondary,
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 3,
-        },
-        shadowOpacity: 0.27,
-        shadowRadius: 4.65,
-        elevation: 6,
-      }}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <MaterialIcons name="add" size={32} color={theme.colors.text.white} />
-    </TouchableOpacity>
-  );
+  // Check if CreateTournament screen is currently focused in the Home stack
+  const isOnCreateTournament = useNavigationState((state) => {
+    const homeTab = state?.routes?.find(r => r.name === 'Home');
+    if (!homeTab?.state) return false;
+    const homeState = homeTab.state;
+    const currentIndex = homeState.index ?? 0;
+    const currentRoute = homeState.routes[currentIndex];
+    return currentRoute?.name === 'CreateTournament';
+  });
+
+  const tabBarStyle = useMemo(() => ({
+    backgroundColor: theme.colors.background.primary,
+    borderTopColor: theme.colors.border.subtle,
+    borderTopWidth: 1,
+    paddingBottom: 24,
+    paddingTop: 8,
+    height: 84,
+    // No shadow - just hairline border
+    shadowOpacity: 0,
+    elevation: 0,
+  }), [theme]);
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: theme.colors.background.pureWhite,
-          borderTopColor: theme.colors.light.border,
-          borderTopWidth: 1,
-          paddingBottom: 24,
-          paddingTop: 8,
-          height: 88,
-          ...theme.shadows.card,
-        },
-        tabBarActiveTintColor: theme.colors.accent.infoBlue,
-        tabBarInactiveTintColor: theme.colors.text.mediumGray,
+        tabBarStyle,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.text.tertiary,
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
+          fontSize: 11,
+          fontWeight: '500',
+          letterSpacing: 0.2,
         },
       }}>
     <Tab.Screen
@@ -268,13 +295,21 @@ const BottomTabNavigator = () => {
       component={HomeStack} // We'll navigate to CreateTournament from this
       options={({ navigation }) => ({
         tabBarLabel: '',
-        tabBarIcon: () => (
-          <CreateTournamentButton 
-            onPress={() => navigation.navigate('Home', { 
-              screen: 'CreateTournament' 
-            })} 
-          />
-        ),
+        tabBarIcon: () => {
+          // Hide FAB when already on CreateTournament screen
+          if (isOnCreateTournament) {
+            return <View style={{ width: 56, height: 56 }} />;
+          }
+          return (
+            <CreateTournamentButton 
+              onPress={() => navigation.navigate('Home', { 
+                screen: 'CreateTournament' 
+              })}
+              backgroundColor={theme.colors.primary}
+              iconColor="#FFFFFF"
+            />
+          );
+        },
         tabBarButton: (props) => (
           <View style={{ flex: 1, alignItems: 'center' }}>
             {props.children}

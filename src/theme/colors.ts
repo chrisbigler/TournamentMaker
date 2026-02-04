@@ -1,163 +1,183 @@
 export const colors = {
-  // Core Brand Colors (Professional Design)
-  primary: {
-    deepNavy: '#0F172A',        // Primary brand, headers - from migration guide
-    electricBlue: '#3B82F6',    // Primary actions, CTAs - from migration guide
-    slateGray: '#475569',       // Secondary elements - from migration guide
-    forestGreen: '#059669',     // Success actions, confirmations
-    warmOrange: '#EA580C',      // Warning actions, important buttons
+  // Brand accent - Forest Green (the ONE accent color)
+  primary: '#059669',
+  primaryLight: '#10B981',
+  primaryDark: '#047857',
+  
+  // Secondary accents (for visual variety)
+  accents: {
+    blue: '#3B82F6',
+    purple: '#8B5CF6',
+    amber: '#F59E0B',
+    rose: '#F43F5E',
+    cyan: '#06B6D4',
   },
   
-  // Background Colors (Professional Light Theme)
-  background: {
-    pureWhite: '#FFFFFF',       // Main background - from migration guide
-    coolGray: '#F8FAFC',        // Card backgrounds - from migration guide
-    lightGray: '#F1F5F9',       // Section dividers - from migration guide
+  // Semantic colors (used sparingly)
+  semantic: {
+    success: '#059669',       // Same as primary
+    warning: '#F59E0B',       // Amber (warmer)
+    error: '#EF4444',         // Red (brighter)
+    info: '#3B82F6',          // Blue
   },
   
-  // Text Colors (Professional Design)
-  text: {
-    richBlack: '#0F172A',       // Primary text - from migration guide
-    darkGray: '#334155',        // Secondary text - from migration guide
-    mediumGray: '#64748B',      // Placeholder text - from migration guide
-    lightGray: '#94A3B8',       // Disabled text - from migration guide
-    white: '#FFFFFF',           // White text for dark backgrounds
-  },
-  
-  // Action Colors (Varied Professional Design)
-  action: {
-    primary: '#3B82F6',         // Primary actions (create, start)
-    secondary: '#059669',       // Secondary actions (save, confirm)
-    tertiary: '#EA580C',        // Tertiary actions (edit, modify)
-    destructive: '#EF4444',     // Destructive actions (delete, reset)
-    neutral: '#475569',         // Neutral actions (cancel, back)
-  },
-  
-  // Accent Colors (Professional Design)
-  accent: {
-    successGreen: '#10B981',    // Success states - from migration guide
-    warningOrange: '#F59E0B',   // Warnings - from migration guide
-    errorRed: '#EF4444',        // Errors - from migration guide
-    infoBlue: '#0EA5E9',        // Information - from migration guide
-    purpleAccent: '#8B5CF6',    // Special features, premium
-  },
-  
-  // Selection States (Varied Colors)
-  selection: {
-    primary: '#059669',         // Primary selections (players, teams)
-    secondary: '#8B5CF6',       // Secondary selections (modes, options)
-    active: '#EA580C',          // Active states (current match, playing)
-    highlight: '#F59E0B',       // Highlights (achievements, special)
-  },
-  
-  // Legacy colors (kept for backward compatibility during transition)
-  legacy: {
-    sunbeamGold: '#F7C548',
-    glassGreen: '#7FB069',
-    skyBlue: '#87CEEB',
-    warmWhite: '#FDFBF7',
-    softGray: '#E8E5E0',
-    stoneGray: '#9B9B93',
-    charcoal: '#3A3A37',
-  },
-  
-  // Light mode theme (Professional style)
+  // Light mode palette
   light: {
-    background: '#FFFFFF',
-    surface: '#FFFFFF',
-    card: '#F8FAFC',
-    text: {
-      primary: '#0F172A',
-      secondary: '#334155',
-      tertiary: '#64748B',
-      disabled: '#94A3B8',
-      inverse: '#FFFFFF',
+    background: {
+      primary: '#FFFFFF',     // Main background
+      secondary: '#FAFAFA',   // Subtle elevation (cards)
+      tertiary: '#F5F5F5',    // Grouped sections
     },
-    border: '#E2E8F0',
-    notification: '#3B82F6',
-    primary: '#3B82F6',
-    secondary: '#475569',
+    border: {
+      subtle: '#E5E5E5',      // Hairlines
+      default: '#D4D4D4',     // Inputs, cards
+      strong: '#A3A3A3',      // Emphasis
+    },
+    text: {
+      primary: '#171717',     // Headlines
+      secondary: '#525252',   // Body text
+      tertiary: '#737373',    // Captions, placeholders
+      disabled: '#A3A3A3',    // Disabled states
+      inverse: '#FFFFFF',     // Text on dark/colored backgrounds
+    },
+    // Convenience aliases
+    surface: '#FFFFFF',
+    card: '#FFFFFF',
+    notification: '#059669',
   },
   
-  // Dark mode theme (Professional style)
+  // Dark mode palette
   dark: {
-    background: '#0F172A',
-    surface: '#1E293B',
-    card: '#334155',
-    text: {
-      primary: '#F8FAFC',
-      secondary: '#E2E8F0',
-      tertiary: '#94A3B8',
-      disabled: '#64748B',
-      inverse: '#0F172A',
+    background: {
+      primary: '#0A0A0A',     // Main background (near black)
+      secondary: '#171717',   // Subtle elevation (cards)
+      tertiary: '#262626',    // Grouped sections
     },
-    border: '#475569',
-    notification: '#3B82F6',
-    primary: '#3B82F6',
-    secondary: '#E2E8F0',
+    border: {
+      subtle: '#262626',      // Hairlines
+      default: '#404040',     // Inputs, cards
+      strong: '#525252',      // Emphasis
+    },
+    text: {
+      primary: '#FAFAFA',     // Headlines
+      secondary: '#D4D4D4',   // Body text
+      tertiary: '#A3A3A3',    // Captions, placeholders
+      disabled: '#525252',    // Disabled states
+      inverse: '#171717',     // Text on light backgrounds
+    },
+    // Convenience aliases
+    surface: '#171717',
+    card: '#171717',
+    notification: '#10B981',
+  },
+  
+  // Legacy color mappings (for backward compatibility during transition)
+  // These map to the new system and can be removed once migration is complete
+  legacy: {
+    deepNavy: '#171717',          // Maps to text.primary
+    electricBlue: '#059669',      // Maps to primary (now green)
+    slateGray: '#525252',         // Maps to text.secondary
+    pureWhite: '#FFFFFF',         // Maps to background.primary
+    coolGray: '#FAFAFA',          // Maps to background.secondary
+    lightGray: '#F5F5F5',         // Maps to background.tertiary
+    richBlack: '#171717',         // Maps to text.primary
+    darkGray: '#525252',          // Maps to text.secondary
+    mediumGray: '#737373',        // Maps to text.tertiary
+    successGreen: '#059669',      // Maps to semantic.success
+    warningOrange: '#D97706',     // Maps to semantic.warning
+    errorRed: '#DC2626',          // Maps to semantic.error
+    infoBlue: '#0284C7',          // Maps to semantic.info
   },
 } as const;
 
 export const gradients = {
-  // Professional gradients
-  primaryBlue: ['#3B82F6', '#2563EB'],        // Electric blue gradient
-  forestGreen: ['#059669', '#047857'],        // Forest green gradient
-  warmOrange: ['#EA580C', '#DC2626'],         // Warm orange gradient
-  navy: ['#0F172A', '#1E293B'],               // Deep navy gradient
-  navyGradient: ['#0F172A', '#1E293B', '#334155'], // Professional navy gradient
-  coolGray: ['#F8FAFC', '#F1F5F9'],           // Cool gray gradient
+  // Primary gradient (subtle)
+  primary: ['#059669', '#047857'],
+  
+  // Background gradients (very subtle)
+  surfaceLight: ['#FFFFFF', '#FAFAFA'],
+  surfaceDark: ['#171717', '#0A0A0A'],
   
   // Legacy gradients (for backward compatibility)
-  sunbeam: ['#F7C548', '#E6B439'],
-  botanical: ['#7FB069', '#6A9A5B'],
-  sky: ['#87CEEB', '#6BB6E0'],
-  warm: ['#FDFBF7', '#F5F1E8'],
+  primaryBlue: ['#059669', '#047857'],  // Now green
+  forestGreen: ['#059669', '#047857'],
+  navy: ['#171717', '#0A0A0A'],
+  navyGradient: ['#171717', '#0A0A0A', '#262626'],
+  coolGray: ['#FAFAFA', '#F5F5F5'],
 } as const;
 
 export const shadows = {
-  // Professional shadow system
+  // New elevation system
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  low: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  medium: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  high: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  
+  // Legacy shadow mappings
   card: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
   hover: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   elevated: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 12,
-  },
-  
-  // Legacy shadows (for backward compatibility)
-  light: {
-    shadowColor: '#3A3A37',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  medium: {
-    shadowColor: '#3A3A37',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 6,
   },
-  heavy: {
-    shadowColor: '#3A3A37',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 12,
+  light: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
-} as const; 
+  medium: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  heavy: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+} as const;

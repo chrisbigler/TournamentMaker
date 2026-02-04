@@ -16,7 +16,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.tournamentmaker"
+      "bundleIdentifier": "org.name.TournamentMaker",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Tournament Maker needs access to your photo library to select profile pictures for players.",
+        "NSCameraUsageDescription": "Tournament Maker needs access to your camera to take profile pictures for players."
+      }
     },
     "android": {
       "adaptiveIcon": {

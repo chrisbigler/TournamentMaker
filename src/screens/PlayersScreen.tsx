@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,11 +16,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList, Player } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService from '../services/TournamentService';
-import { colors, useTheme } from '../theme';
+import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import ProfilePicture from '../components/ProfilePicture';
+import ScreenHeader from '../components/ScreenHeader';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 type PlayersScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Players'>;
@@ -42,7 +43,6 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setLoading(true);
       const allPlayers = await DatabaseService.getAllPlayers();
-      // Sort players by win percentage (descending)
       const sortedPlayers = sortPlayersByWinPercentage(allPlayers);
       setPlayers(sortedPlayers);
       setFilteredPlayers(sortedPlayers);
@@ -54,7 +54,6 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Filter players based on search query
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredPlayers(players);
@@ -72,7 +71,6 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       const aGamesPlayed = a.wins + a.losses;
       const bGamesPlayed = b.wins + b.losses;
       
-      // Players with no games go to the end
       if (aGamesPlayed === 0 && bGamesPlayed === 0) return 0;
       if (aGamesPlayed === 0) return 1;
       if (bGamesPlayed === 0) return -1;
@@ -80,23 +78,19 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       const aWinRate = a.wins / aGamesPlayed;
       const bWinRate = b.wins / bGamesPlayed;
       
-      // Sort by win rate descending
       if (aWinRate !== bWinRate) {
         return bWinRate - aWinRate;
       }
       
-      // If win rates are equal, sort by number of wins descending (more wins = better)
       if (a.wins !== b.wins) {
         return b.wins - a.wins;
       }
       
-      // If wins are also equal, sort by losses ascending (fewer losses = better)
       return a.losses - b.losses;
     });
   };
 
-  const getBadgeForPlayer = (player: Player, index: number) => {
-    // Only show badges if there are at least 2 players with games played
+  const getBadgeForPlayer = useCallback((player: Player, index: number) => {
     const playersWithGames = players.filter(p => (p.wins + p.losses) > 0);
     
     if (playersWithGames.length < 2) return null;
@@ -104,20 +98,19 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     const playerGamesPlayed = player.wins + player.losses;
     if (playerGamesPlayed === 0) return null;
     
-    // Find the indices of the best and worst players among those who have played games
     const bestPlayerIndex = players.findIndex(p => p.id === playersWithGames[0].id);
     const worstPlayerIndex = players.findIndex(p => p.id === playersWithGames[playersWithGames.length - 1].id);
     
     if (index === bestPlayerIndex) {
-      return { text: 'Champ 👑', color: theme.colors.accent.successGreen, opacity: 0.3 };
+      return { text: 'Champ', color: theme.colors.primary };
     }
     
     if (index === worstPlayerIndex && playersWithGames.length > 1) {
-      return { text: 'Biggest Loser 😭', color: theme.colors.accent.errorRed, opacity: 0.3 };
+      return { text: 'Last', color: theme.colors.semantic.error };
     }
     
     return null;
-  };
+  }, [players, theme.colors.primary, theme.colors.semantic.error]);
 
   const handleFixPlayerStats = async () => {
     Alert.alert(
@@ -134,7 +127,7 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
             try {
               setFixingStats(true);
               await TournamentService.resetPlayerStatistics();
-              await loadPlayers(); // Reload to see updated stats
+              await loadPlayers();
               Alert.alert('Success', 'Player statistics have been reset!');
             } catch (error) {
               Alert.alert('Error', 'Failed to reset player statistics');
@@ -154,18 +147,16 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
     }, [])
   );
 
-  const renderGenderLabel = (gender: string) => {
+  const renderGenderLabel = useCallback((gender: string) => {
     const isMale = gender.toLowerCase() === 'male';
     const iconName = isMale ? 'human-male' : 'human-female';
-    const iconColor = isMale
-      ? '#4082c9' // Blue for male
-      : '#D865A3'; // Slightly dark pink for female
+    const iconColor = isMale ? '#4082c9' : '#D865A3';
     
     return (
       <View style={styles.genderContainer}>
         <MaterialCommunityIcons 
           name={iconName} 
-          size={14} 
+          size={12} 
           color={iconColor}
           style={styles.genderIcon}
         />
@@ -174,23 +165,24 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         </Text>
       </View>
     );
-  };
+  }, [styles]);
 
-  const renderPlayer = ({ item, index }: { item: Player; index: number }) => {
-    const screenWidth = Dimensions.get('window').width;
-    const isTablet = screenWidth > 600;
+  const screenWidth = useMemo(() => Dimensions.get('window').width, []);
+  const isTablet = useMemo(() => screenWidth > 600, [screenWidth]);
+  
+  const renderPlayer = useCallback(({ item, index }: { item: Player; index: number }) => {
     const profileSize = isTablet ? 'large' : 'medium';
     const badge = getBadgeForPlayer(item, index);
     
     return (
-      <Card variant="outlined" style={isTablet ? styles.playerCardTablet : styles.playerCard}>
-        <TouchableOpacity
-          style={isTablet ? styles.playerContentTablet : styles.playerContent}
-          onPress={() => navigation.navigate('CreatePlayer', { player: item })}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel={`Edit player ${item.name}`}>
-          <View style={isTablet ? styles.playerMainInfoTablet : styles.playerMainInfo}>
+      <TouchableOpacity
+        style={styles.playerCard}
+        onPress={() => navigation.navigate('CreatePlayer', { player: item })}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Edit player ${item.name}`}>
+        <View style={styles.playerContent}>
+          <View style={styles.playerMainInfo}>
             <ProfilePicture
               profilePicture={item.profilePicture}
               name={item.name}
@@ -198,50 +190,43 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
               style={styles.profilePicture}
               showBorder={false}
             />
-            <View style={isTablet ? styles.playerInfoTablet : styles.playerInfo}>
+            <View style={styles.playerInfo}>
               <View style={styles.nameContainer}>
                 {badge && (
                   <View style={[styles.badge, { backgroundColor: badge.color }]}>
                     <Text style={styles.badgeText}>{badge.text}</Text>
                   </View>
                 )}
-                <View style={styles.nameRow}>
-                  <Text style={isTablet ? styles.playerNameTablet : styles.playerName}>
-                    {item.name}
-                  </Text>
-                </View>
+                <Text style={styles.playerName}>{item.name}</Text>
               </View>
               {item.nickname && (
-                <Text style={isTablet ? styles.playerNicknameTablet : styles.playerNickname}>
-                  "{item.nickname}"
-                </Text>
+                <Text style={styles.playerNickname}>"{item.nickname}"</Text>
               )}
               {renderGenderLabel(item.gender)}
             </View>
           </View>
-          <View style={isTablet ? styles.playerStatsTablet : styles.playerStats}>
-            <View style={isTablet ? styles.statsContainerTablet : styles.statsContainer}>
-              <Text style={isTablet ? styles.statsTextTablet : styles.statsText}>
+          <View style={styles.playerStats}>
+            <View style={styles.statsContainer}>
+              <Text style={styles.statsText}>
                 {item.wins}W - {item.losses}L
               </Text>
-              <Text style={isTablet ? styles.winRateTablet : styles.winRate}>
+              <Text style={styles.winRate}>
                 {item.wins + item.losses > 0
                   ? `${Math.round((item.wins / (item.wins + item.losses)) * 100)}%`
                   : '0%'}
               </Text>
             </View>
           </View>
-        </TouchableOpacity>
-      </Card>
+        </View>
+      </TouchableOpacity>
     );
-  };
+  }, [isTablet, getBadgeForPlayer, renderGenderLabel, navigation, styles]);
 
   const renderEmptyState = () => {
     if (searchQuery.trim() !== '') {
-      // Empty state for search with no results
       return (
         <View style={styles.emptyState}>
-          <MaterialIcons name="search-off" size={64} color={theme.colors.accent.warningOrange} style={styles.emptyIcon} />
+          <MaterialIcons name="search-off" size={48} color={theme.colors.text.tertiary} style={styles.emptyIcon} />
           <Text style={styles.emptyStateTitle}>No Players Found</Text>
           <Text style={styles.emptyStateText}>
             Try adjusting your search or add a new player
@@ -256,10 +241,9 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
       );
     }
 
-    // Empty state for no players at all
     return (
       <View style={styles.emptyState}>
-        <MaterialIcons name="person-add" size={64} color={theme.colors.action.secondary} style={styles.emptyIcon} />
+        <MaterialIcons name="person-add" size={48} color={theme.colors.primary} style={styles.emptyIcon} />
         <Text style={styles.emptyStateTitle}>No Players Yet</Text>
         <Text style={styles.emptyStateText}>
           Add your first player to get started with tournaments
@@ -267,64 +251,47 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
         <Button
           title="Add First Player"
           onPress={() => navigation.navigate('CreatePlayer', {})}
-          variant="secondary"
+          variant="primary"
           style={styles.emptyStateButton}
         />
       </View>
     );
   };
 
+  const renderResetButton = () => (
+    <TouchableOpacity
+      style={styles.resetButton}
+      onPress={handleFixPlayerStats}
+      disabled={fixingStats}
+      activeOpacity={0.7}
+    >
+      <MaterialIcons 
+        name="sync" 
+        size={18} 
+        color="#FFFFFF" 
+      />
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Players ({filteredPlayers.length})</Text>
-        <View style={styles.headerButtons}>
-          <Button
-            title="+ Add Player"
-            onPress={() => navigation.navigate('CreatePlayer', {})}
-            variant="secondary"
-            size="sm"
-          />
-        </View>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <MaterialIcons 
-            name="search" 
-            size={20} 
-            color={theme.colors.text.mediumGray} 
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search players..."
-            placeholderTextColor={theme.colors.text.mediumGray}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={handleFixPlayerStats}
-          disabled={fixingStats}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons 
-            name="sync" 
-            size={20} 
-            color={theme.colors.background.pureWhite} 
-          />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        variant="list"
+        title="Players"
+        count={filteredPlayers.length}
+        onAdd={() => navigation.navigate('CreatePlayer', {})}
+        addLabel="+ Add"
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search players..."
+        rightAction={renderResetButton()}
+      />
 
       {loading || fixingStats ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator 
             size="large" 
-            color={theme.colors.action.secondary} 
+            color={theme.colors.primary} 
           />
           <Text style={styles.loadingText}>
             {fixingStats ? 'Resetting player statistics...' : 'Loading players...'}
@@ -346,250 +313,144 @@ const PlayersScreen: React.FC<Props> = ({ navigation }) => {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background.coolGray,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.background.pureWhite,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.light.border,
-    ...theme.shadows.card,
-  },
-  title: {
-    ...theme.textStyles.h3,
-    color: theme.colors.text.richBlack,
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    gap: 12,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 12,
-    backgroundColor: theme.colors.background.pureWhite,
-    borderWidth: 1,
-    borderColor: theme.colors.light.border,
-    borderRadius: 12,
-    height: 44,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    height: '100%',
-    paddingVertical: 0,
-    color: theme.colors.text.richBlack,
-  },
-  resetButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: theme.colors.accent.successGreen,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background.primary,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  listContainer: {
-    padding: theme.spacing.lg,
-  },
-  playerCard: {
-    marginBottom: theme.spacing.md,
-    padding: 0,
-  },
-  playerCardTablet: {
-    marginBottom: theme.spacing.lg,
-  },
-  playerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-  },
-  playerContentTablet: {
-    padding: theme.spacing.lg,
-  },
-  playerMainInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-  },
-  playerMainInfoTablet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-  },
-  profilePicture: {
-    marginRight: theme.spacing.md,
-    flexShrink: 0,
-  },
-  playerInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  playerInfoTablet: {
-    flex: 1,
-    minWidth: 0,
-  },
-  nameContainer: {
-    marginBottom: theme.spacing.xs,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  badge: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.sm,
-    marginBottom: theme.spacing.xs,
-    alignSelf: 'flex-start',
-  },
-  badgeText: {
-    ...theme.textStyles.caption,
-    color: theme.colors.background.pureWhite,
-    fontWeight: theme.textStyles.button.fontWeight,
-    fontSize: 10,
-  },
-  playerName: {
-    ...theme.textStyles.h4,
-    color: theme.colors.text.richBlack,
-  },
-  playerNameTablet: {
-    ...theme.textStyles.h4,
-    color: theme.colors.text.richBlack,
-  },
-  playerNickname: {
-    ...theme.textStyles.bodySmall,
-    color: theme.colors.text.darkGray,
-    fontStyle: 'italic',
-    marginBottom: theme.spacing.xs,
-  },
-  playerNicknameTablet: {
-    ...theme.textStyles.bodySmall,
-    color: theme.colors.text.darkGray,
-    fontStyle: 'italic',
-    marginBottom: theme.spacing.xs,
-  },
-  genderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  genderIcon: {
-    marginRight: theme.spacing.xs,
-  },
-  genderText: {
-    ...theme.textStyles.caption,
-    color: theme.colors.text.mediumGray,
-    textTransform: 'capitalize',
-  },
-  playerStats: {
-    alignItems: 'flex-end',
-    flexShrink: 0,
-    marginLeft: theme.spacing.sm,
-  },
-  playerStatsTablet: {
-    alignItems: 'flex-end',
-    flexShrink: 0,
-    marginLeft: theme.spacing.md,
-  },
-  statsContainer: {
-    backgroundColor: theme.colors.background.lightGray,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    alignItems: 'center',
-    minWidth: 60,
-  },
-  statsContainerTablet: {
-    backgroundColor: theme.colors.background.lightGray,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-    minWidth: 80,
-  },
-  statsText: {
-    ...theme.textStyles.body,
-    fontWeight: theme.textStyles.h4.fontWeight,
-    color: theme.colors.text.richBlack,
-    marginBottom: theme.spacing.xs,
-  },
-  statsTextTablet: {
-    ...theme.textStyles.body,
-    fontWeight: theme.textStyles.h4.fontWeight,
-    color: theme.colors.text.richBlack,
-    marginBottom: theme.spacing.xs,
-  },
-  winRate: {
-    ...theme.textStyles.caption,
-    color: theme.colors.accent.successGreen,
-    fontWeight: theme.textStyles.button.fontWeight,
-  },
-  winRateTablet: {
-    ...theme.textStyles.caption,
-    color: theme.colors.accent.successGreen,
-    fontWeight: theme.textStyles.button.fontWeight,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing['8xl'],
-  },
-  emptyStateTitle: {
-    ...theme.textStyles.h3,
-    color: theme.colors.text.richBlack,
-    marginBottom: theme.spacing.sm,
-  },
-  emptyStateText: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.darkGray,
-    textAlign: 'center',
-    marginBottom: theme.spacing['3xl'],
-    paddingHorizontal: theme.spacing['4xl'],
-  },
-  emptyStateButton: {
-    minWidth: 200,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    ...theme.textStyles.body,
-    color: theme.colors.text.darkGray,
-    marginTop: theme.spacing.lg,
-  },
-  emptyIcon: {
-    marginBottom: theme.spacing.lg,
-  },
+    resetButton: {
+      width: 40,
+      height: 40,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    listContainer: {
+      padding: theme.spacing.lg,
+    },
+    playerCard: {
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      marginBottom: theme.spacing.sm,
+      ...theme.shadows.low,
+    },
+    playerContent: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: theme.spacing.md,
+    },
+    playerMainInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      minWidth: 0,
+    },
+    profilePicture: {
+      marginRight: theme.spacing.md,
+      flexShrink: 0,
+    },
+    playerInfo: {
+      flex: 1,
+      minWidth: 0,
+    },
+    nameContainer: {
+      marginBottom: 2,
+    },
+    badge: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+      borderRadius: theme.borderRadius.full,
+      marginBottom: 4,
+      alignSelf: 'flex-start',
+    },
+    badgeText: {
+      ...theme.textStyles.caption,
+      color: '#FFFFFF',
+      fontWeight: theme.typography.fontWeights.medium,
+      fontSize: 10,
+    },
+    playerName: {
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+    },
+    playerNickname: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
+      fontStyle: 'italic',
+      marginBottom: 2,
+    },
+    genderContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    genderIcon: {
+      marginRight: 4,
+    },
+    genderText: {
+      ...theme.textStyles.caption,
+      textTransform: 'capitalize',
+    },
+    playerStats: {
+      alignItems: 'flex-end',
+      flexShrink: 0,
+      marginLeft: theme.spacing.sm,
+    },
+    statsContainer: {
+      backgroundColor: theme.colors.background.secondary,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.borderRadius.sm,
+      alignItems: 'center',
+      minWidth: 60,
+    },
+    statsText: {
+      ...theme.textStyles.bodySmall,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+      marginBottom: 2,
+    },
+    winRate: {
+      ...theme.textStyles.caption,
+      color: theme.colors.primary,
+      fontWeight: theme.typography.fontWeights.medium,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing['6xl'],
+    },
+    emptyIcon: {
+      marginBottom: theme.spacing.md,
+    },
+    emptyStateTitle: {
+      ...theme.textStyles.h4,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.sm,
+    },
+    emptyStateText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: theme.spacing.xl,
+      paddingHorizontal: theme.spacing['3xl'],
+    },
+    emptyStateButton: {
+      minWidth: 180,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.secondary,
+      marginTop: theme.spacing.md,
+    },
   });
 
-export default PlayersScreen; 
+export default PlayersScreen;

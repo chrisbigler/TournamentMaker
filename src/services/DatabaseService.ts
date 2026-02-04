@@ -22,7 +22,6 @@ class DatabaseService {
     try {
       this.database = SQLite.openDatabaseSync('TournamentMaker.db');
       await this.createTables();
-      console.log('Database initialized successfully');
     } catch (error) {
       console.error('Database initialization failed:', error);
       throw error;
@@ -124,7 +123,16 @@ class DatabaseService {
       this.database.execSync(createPlayerGroupsTable);
       this.database.execSync(createPlayerGroupMembersTable);
       
-      console.log('Tables created successfully');
+      // Create indexes for foreign keys to improve query performance
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_teams_tournament_id ON teams(tournament_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_teams_player1_id ON teams(player1_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_teams_player2_id ON teams(player2_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_matches_tournament_id ON matches(tournament_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_matches_team1_id ON matches(team1_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_matches_team2_id ON matches(team2_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_matches_winner_id ON matches(winner_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_player_group_members_group_id ON player_group_members(group_id)');
+      this.database.execSync('CREATE INDEX IF NOT EXISTS idx_player_group_members_player_id ON player_group_members(player_id)');
       
       // Run migrations after table creation
       await this.runMigrations();
@@ -135,8 +143,6 @@ class DatabaseService {
   }
 
   private async runMigrations(): Promise<void> {
-    console.log('Running database migrations...');
-    
     if (!this.database) throw new Error('Database not initialized');
     
     try {
@@ -145,11 +151,7 @@ class DatabaseService {
       const hasGroupIdColumn = teamsInfo.some((col) => col.name === 'tournament_id');
       
       if (!hasGroupIdColumn) {
-        console.log('Adding tournament_id column to teams table...');
         this.database.execSync('ALTER TABLE teams ADD COLUMN tournament_id TEXT;');
-        console.log('Successfully added tournament_id column to teams table');
-      } else {
-        console.log('tournament_id column already exists in teams table');
       }
 
       // Migration 2: Add profile_picture to players table if it doesn't exist
@@ -157,11 +159,7 @@ class DatabaseService {
       const hasProfilePictureColumn = playersInfo.some((col) => col.name === 'profile_picture');
 
       if (!hasProfilePictureColumn) {
-        console.log('Adding profile_picture column to players table...');
         this.database.execSync('ALTER TABLE players ADD COLUMN profile_picture TEXT;');
-        console.log('Successfully added profile_picture column to players table');
-      } else {
-        console.log('profile_picture column already exists in players table');
       }
 
       // Migration 3: Add buy_in and pot columns to tournaments table if they don't exist
@@ -170,22 +168,12 @@ class DatabaseService {
       const hasPotColumn = tournamentsInfo.some((col) => col.name === 'pot');
 
       if (!hasBuyInColumn) {
-        console.log('Adding buy_in column to tournaments table...');
         this.database.execSync('ALTER TABLE tournaments ADD COLUMN buy_in REAL DEFAULT 0;');
-        console.log('Successfully added buy_in column to tournaments table');
-      } else {
-        console.log('buy_in column already exists in tournaments table');
       }
 
       if (!hasPotColumn) {
-        console.log('Adding pot column to tournaments table...');
         this.database.execSync('ALTER TABLE tournaments ADD COLUMN pot REAL DEFAULT 0;');
-        console.log('Successfully added pot column to tournaments table');
-      } else {
-        console.log('pot column already exists in tournaments table');
       }
-      
-      console.log('Database migrations completed successfully');
     } catch (error) {
       console.error('Failed to run migrations:', error);
       throw error;
@@ -648,8 +636,6 @@ class DatabaseService {
         'DELETE FROM tournaments WHERE id = ?',
         [tournamentId]
       );
-      
-      console.log('Tournament deleted:', tournamentId);
     } catch (error) {
       console.error('Failed to delete tournament:', error);
       throw error;
@@ -662,15 +648,12 @@ class DatabaseService {
     try {
       // Delete all matches first
       this.database.runSync('DELETE FROM matches');
-      console.log('All matches deleted');
 
       // Delete all teams
       this.database.runSync('DELETE FROM teams');
-      console.log('All teams deleted');
 
       // Delete all tournaments
       this.database.runSync('DELETE FROM tournaments');
-      console.log('All tournaments deleted');
     } catch (error) {
       console.error('Failed to clear all tournaments:', error);
       throw error;
@@ -680,30 +663,52 @@ class DatabaseService {
   private async getTeamsForTournament(tournamentId: string): Promise<Team[]> {
     if (!this.database) throw new Error('Database not initialized');
 
-    console.log('getTeamsForTournament called with tournamentId:', tournamentId);
-
     try {
+      // Single JOIN query to get all teams with player data
       const rows = this.database.getAllSync(
-        'SELECT * FROM teams WHERE tournament_id = ? ORDER BY created_at',
+        `SELECT t.id, t.tournament_id, t.team_name, t.created_at,
+         p1.id as p1_id, p1.name as p1_name, p1.nickname as p1_nickname, p1.gender as p1_gender, 
+         p1.wins as p1_wins, p1.losses as p1_losses, p1.profile_picture as p1_profile_picture, 
+         p1.created_at as p1_created_at, p1.updated_at as p1_updated_at,
+         p2.id as p2_id, p2.name as p2_name, p2.nickname as p2_nickname, p2.gender as p2_gender, 
+         p2.wins as p2_wins, p2.losses as p2_losses, p2.profile_picture as p2_profile_picture, 
+         p2.created_at as p2_created_at, p2.updated_at as p2_updated_at
+         FROM teams t
+         JOIN players p1 ON t.player1_id = p1.id
+         JOIN players p2 ON t.player2_id = p2.id
+         WHERE t.tournament_id = ?
+         ORDER BY t.created_at`,
         [tournamentId]
-      ) as DatabaseTeam[];
+      ) as any[];
 
-      console.log('Raw teams from DB:', rows.length, rows);
-      const teams: Team[] = [];
-      
-      for (const row of rows) {
-        console.log('Processing team row:', row);
-        const team = await this.getTeam(row.id);
-        if (team) {
-          teams.push(team);
-          console.log('Team added:', team.id, team.teamName);
-        } else {
-          console.log('Failed to load team details for:', row.id);
-        }
-      }
-      
-      console.log('Total teams processed:', teams.length);
-      return teams;
+      return rows.map((row) => ({
+        id: row.id,
+        tournamentId: row.tournament_id || undefined,
+        player1: {
+          id: row.p1_id,
+          name: row.p1_name,
+          nickname: row.p1_nickname || undefined,
+          gender: row.p1_gender as Gender,
+          wins: row.p1_wins,
+          losses: row.p1_losses,
+          profilePicture: row.p1_profile_picture || undefined,
+          createdAt: new Date(row.p1_created_at),
+          updatedAt: new Date(row.p1_updated_at),
+        },
+        player2: {
+          id: row.p2_id,
+          name: row.p2_name,
+          nickname: row.p2_nickname || undefined,
+          gender: row.p2_gender as Gender,
+          wins: row.p2_wins,
+          losses: row.p2_losses,
+          profilePicture: row.p2_profile_picture || undefined,
+          createdAt: new Date(row.p2_created_at),
+          updatedAt: new Date(row.p2_updated_at),
+        },
+        teamName: row.team_name,
+        createdAt: new Date(row.created_at),
+      }));
     } catch (error) {
       console.error('Error querying teams:', error);
       throw error;
@@ -713,48 +718,163 @@ class DatabaseService {
   private async getMatchesForTournament(tournamentId: string): Promise<Match[]> {
     if (!this.database) throw new Error('Database not initialized');
 
-    console.log('getMatchesForTournament called with tournamentId:', tournamentId);
-
     try {
+      // Single JOIN query to get all matches with team and player data
       const rows = this.database.getAllSync(
-        'SELECT * FROM matches WHERE tournament_id = ? ORDER BY round, created_at',
+        `SELECT m.id, m.tournament_id, m.score1, m.score2, m.round, m.is_complete, 
+         m.created_at, m.updated_at,
+         -- Team 1 data
+         t1.id as t1_id, t1.tournament_id as t1_tournament_id, t1.team_name as t1_team_name, t1.created_at as t1_created_at,
+         t1p1.id as t1p1_id, t1p1.name as t1p1_name, t1p1.nickname as t1p1_nickname, t1p1.gender as t1p1_gender,
+         t1p1.wins as t1p1_wins, t1p1.losses as t1p1_losses, t1p1.profile_picture as t1p1_profile_picture,
+         t1p1.created_at as t1p1_created_at, t1p1.updated_at as t1p1_updated_at,
+         t1p2.id as t1p2_id, t1p2.name as t1p2_name, t1p2.nickname as t1p2_nickname, t1p2.gender as t1p2_gender,
+         t1p2.wins as t1p2_wins, t1p2.losses as t1p2_losses, t1p2.profile_picture as t1p2_profile_picture,
+         t1p2.created_at as t1p2_created_at, t1p2.updated_at as t1p2_updated_at,
+         -- Team 2 data (nullable for bye)
+         t2.id as t2_id, t2.tournament_id as t2_tournament_id, t2.team_name as t2_team_name, t2.created_at as t2_created_at,
+         t2p1.id as t2p1_id, t2p1.name as t2p1_name, t2p1.nickname as t2p1_nickname, t2p1.gender as t2p1_gender,
+         t2p1.wins as t2p1_wins, t2p1.losses as t2p1_losses, t2p1.profile_picture as t2p1_profile_picture,
+         t2p1.created_at as t2p1_created_at, t2p1.updated_at as t2p1_updated_at,
+         t2p2.id as t2p2_id, t2p2.name as t2p2_name, t2p2.nickname as t2p2_nickname, t2p2.gender as t2p2_gender,
+         t2p2.wins as t2p2_wins, t2p2.losses as t2p2_losses, t2p2.profile_picture as t2p2_profile_picture,
+         t2p2.created_at as t2p2_created_at, t2p2.updated_at as t2p2_updated_at,
+         -- Winner data (nullable)
+         tw.id as tw_id, tw.tournament_id as tw_tournament_id, tw.team_name as tw_team_name, tw.created_at as tw_created_at,
+         twp1.id as twp1_id, twp1.name as twp1_name, twp1.nickname as twp1_nickname, twp1.gender as twp1_gender,
+         twp1.wins as twp1_wins, twp1.losses as twp1_losses, twp1.profile_picture as twp1_profile_picture,
+         twp1.created_at as twp1_created_at, twp1.updated_at as twp1_updated_at,
+         twp2.id as twp2_id, twp2.name as twp2_name, twp2.nickname as twp2_nickname, twp2.gender as twp2_gender,
+         twp2.wins as twp2_wins, twp2.losses as twp2_losses, twp2.profile_picture as twp2_profile_picture,
+         twp2.created_at as twp2_created_at, twp2.updated_at as twp2_updated_at
+         FROM matches m
+         -- Team 1 joins (required)
+         JOIN teams t1 ON m.team1_id = t1.id
+         JOIN players t1p1 ON t1.player1_id = t1p1.id
+         JOIN players t1p2 ON t1.player2_id = t1p2.id
+         -- Team 2 joins (optional for bye)
+         LEFT JOIN teams t2 ON m.team2_id = t2.id
+         LEFT JOIN players t2p1 ON t2.player1_id = t2p1.id
+         LEFT JOIN players t2p2 ON t2.player2_id = t2p2.id
+         -- Winner joins (optional)
+         LEFT JOIN teams tw ON m.winner_id = tw.id
+         LEFT JOIN players twp1 ON tw.player1_id = twp1.id
+         LEFT JOIN players twp2 ON tw.player2_id = twp2.id
+         WHERE m.tournament_id = ?
+         ORDER BY m.round, m.created_at`,
         [tournamentId]
-      ) as DatabaseMatch[];
+      ) as any[];
 
-      console.log('Raw matches from DB:', rows.length, rows);
-      const matches: Match[] = [];
-      
-      for (const row of rows) {
-        console.log('Processing match row:', row);
-        const team1 = await this.getTeam(row.team1_id);
-        const team2 = row.team2_id ? await this.getTeam(row.team2_id) : undefined;
-        const winner = row.winner_id ? await this.getTeam(row.winner_id) : undefined;
-        
-        console.log('Team1:', team1 ? 'found' : 'not found');
-        console.log('Team2:', team2 ? 'found' : (row.team2_id ? 'not found' : 'null (bye)'));
-        
-        if (team1) {
-          const match: Match = {
-            id: row.id,
-            team1,
-            team2: team2 || undefined,
-            score1: row.score1,
-            score2: row.score2,
-            round: row.round,
-            isComplete: row.is_complete === 1,
-            winner: winner || undefined,
-            createdAt: new Date(row.created_at),
-            updatedAt: new Date(row.updated_at),
+      return rows.map((row) => {
+        // Build team1 (always present)
+        const team1: Team = {
+          id: row.t1_id,
+          tournamentId: row.t1_tournament_id || undefined,
+          player1: {
+            id: row.t1p1_id,
+            name: row.t1p1_name,
+            nickname: row.t1p1_nickname || undefined,
+            gender: row.t1p1_gender as Gender,
+            wins: row.t1p1_wins,
+            losses: row.t1p1_losses,
+            profilePicture: row.t1p1_profile_picture || undefined,
+            createdAt: new Date(row.t1p1_created_at),
+            updatedAt: new Date(row.t1p1_updated_at),
+          },
+          player2: {
+            id: row.t1p2_id,
+            name: row.t1p2_name,
+            nickname: row.t1p2_nickname || undefined,
+            gender: row.t1p2_gender as Gender,
+            wins: row.t1p2_wins,
+            losses: row.t1p2_losses,
+            profilePicture: row.t1p2_profile_picture || undefined,
+            createdAt: new Date(row.t1p2_created_at),
+            updatedAt: new Date(row.t1p2_updated_at),
+          },
+          teamName: row.t1_team_name,
+          createdAt: new Date(row.t1_created_at),
+        };
+
+        // Build team2 (optional for bye)
+        let team2: Team | undefined;
+        if (row.t2_id) {
+          team2 = {
+            id: row.t2_id,
+            tournamentId: row.t2_tournament_id || undefined,
+            player1: {
+              id: row.t2p1_id,
+              name: row.t2p1_name,
+              nickname: row.t2p1_nickname || undefined,
+              gender: row.t2p1_gender as Gender,
+              wins: row.t2p1_wins,
+              losses: row.t2p1_losses,
+              profilePicture: row.t2p1_profile_picture || undefined,
+              createdAt: new Date(row.t2p1_created_at),
+              updatedAt: new Date(row.t2p1_updated_at),
+            },
+            player2: {
+              id: row.t2p2_id,
+              name: row.t2p2_name,
+              nickname: row.t2p2_nickname || undefined,
+              gender: row.t2p2_gender as Gender,
+              wins: row.t2p2_wins,
+              losses: row.t2p2_losses,
+              profilePicture: row.t2p2_profile_picture || undefined,
+              createdAt: new Date(row.t2p2_created_at),
+              updatedAt: new Date(row.t2p2_updated_at),
+            },
+            teamName: row.t2_team_name,
+            createdAt: new Date(row.t2_created_at),
           };
-          matches.push(match);
-          console.log('Match added:', match.id, match.team1.teamName, 'vs', match.team2?.teamName || 'BYE');
-        } else {
-          console.log('Skipping match due to missing team1');
         }
-      }
-      
-      console.log('Total matches processed:', matches.length);
-      return matches;
+
+        // Build winner (optional)
+        let winner: Team | undefined;
+        if (row.tw_id) {
+          winner = {
+            id: row.tw_id,
+            tournamentId: row.tw_tournament_id || undefined,
+            player1: {
+              id: row.twp1_id,
+              name: row.twp1_name,
+              nickname: row.twp1_nickname || undefined,
+              gender: row.twp1_gender as Gender,
+              wins: row.twp1_wins,
+              losses: row.twp1_losses,
+              profilePicture: row.twp1_profile_picture || undefined,
+              createdAt: new Date(row.twp1_created_at),
+              updatedAt: new Date(row.twp1_updated_at),
+            },
+            player2: {
+              id: row.twp2_id,
+              name: row.twp2_name,
+              nickname: row.twp2_nickname || undefined,
+              gender: row.twp2_gender as Gender,
+              wins: row.twp2_wins,
+              losses: row.twp2_losses,
+              profilePicture: row.twp2_profile_picture || undefined,
+              createdAt: new Date(row.twp2_created_at),
+              updatedAt: new Date(row.twp2_updated_at),
+            },
+            teamName: row.tw_team_name,
+            createdAt: new Date(row.tw_created_at),
+          };
+        }
+
+        return {
+          id: row.id,
+          team1,
+          team2,
+          score1: row.score1,
+          score2: row.score2,
+          round: row.round,
+          isComplete: row.is_complete === 1,
+          winner,
+          createdAt: new Date(row.created_at),
+          updatedAt: new Date(row.updated_at),
+        };
+      });
     } catch (error) {
       console.error('Error querying matches:', error);
       throw error;

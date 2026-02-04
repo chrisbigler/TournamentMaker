@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   TextInput as RNTextInput,
   Text,
@@ -23,10 +23,24 @@ const TextInput: React.FC<CustomTextInputProps> = ({
   containerStyle,
   variant = 'default',
   style,
+  onFocus,
+  onBlur,
   ...props
 }) => {
   const theme = useTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleFocus = (e: any) => {
+    setIsFocused(true);
+    onFocus?.(e);
+  };
+
+  const handleBlur = (e: any) => {
+    setIsFocused(false);
+    onBlur?.(e);
+  };
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -34,10 +48,13 @@ const TextInput: React.FC<CustomTextInputProps> = ({
         style={[
           styles.input,
           styles[variant],
+          isFocused && styles.focused,
           error && styles.error,
           style,
         ]}
-        placeholderTextColor={theme.colors.text.mediumGray}
+        placeholderTextColor={theme.colors.text.tertiary}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         {...props}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -47,35 +64,39 @@ const TextInput: React.FC<CustomTextInputProps> = ({
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: {
-    marginBottom: theme.spacing.lg,
-  },
-  label: {
-    ...theme.textStyles.label,
-    color: theme.colors.text.richBlack,
-    marginBottom: theme.spacing.sm,
-  },
-  input: {
-    ...theme.components.input,
-    color: theme.colors.text.richBlack,
-  },
-  default: {
-    backgroundColor: theme.colors.background.pureWhite,
-    borderColor: theme.colors.light.border,
-  },
-  outlined: {
-    backgroundColor: 'transparent',
-    borderColor: theme.colors.primary.slateGray,
-    borderWidth: 2,
-  },
-  error: {
-    borderColor: theme.colors.accent.errorRed,
-  },
-  errorText: {
-    ...theme.textStyles.caption,
-    color: theme.colors.accent.errorRed,
-    marginTop: theme.spacing.xs,
-  },
+    container: {
+      marginBottom: theme.spacing.lg,
+    },
+    label: {
+      ...theme.textStyles.label,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.sm,
+    },
+    input: {
+      ...theme.components.input,
+      color: theme.colors.text.primary,
+    },
+    default: {
+      backgroundColor: theme.colors.background.primary,
+      borderColor: theme.colors.border.default,
+    },
+    outlined: {
+      backgroundColor: 'transparent',
+      borderColor: theme.colors.border.strong,
+      borderWidth: 1,
+    },
+    focused: {
+      borderColor: theme.colors.primary,
+      borderWidth: 1,
+    },
+    error: {
+      borderColor: theme.colors.semantic.error,
+    },
+    errorText: {
+      ...theme.textStyles.caption,
+      color: theme.colors.semantic.error,
+      marginTop: theme.spacing.xs,
+    },
   });
 
-export default TextInput; 
+export default TextInput;

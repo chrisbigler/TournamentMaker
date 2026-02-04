@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,14 +11,15 @@ import {
   FlatList,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, StackActions } from '@react-navigation/native';
 import { RootStackParamList, Player, Gender, PlayerGroup } from '../types';
 import DatabaseService from '../services/DatabaseService';
 import TournamentService, { TeamCreationMode } from '../services/TournamentService';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
-import { Button, Card } from '../components';
+import { Button, Card, ScreenHeader } from '../components';
 import { formatCurrencyInput, parseCurrency } from '../utils';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type CreateTournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CreateTournament'>;
 
@@ -66,8 +67,71 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
     useCallback(() => {
       loadPlayers();
       loadPlayerGroups();
+      // Reset flags when screen comes into focus
+      setTournamentCreated(false);
+      setIsDiscarding(false);
     }, [loadPlayers, loadPlayerGroups])
   );
+
+  // Track if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    return tournamentName.trim().length > 0 || 
+           buyIn.length > 0 || 
+           selectedPlayers.length > 0;
+  }, [tournamentName, buyIn, selectedPlayers]);
+
+  // Track if we successfully created a tournament (to skip reset on navigation to Tournament)
+  const [tournamentCreated, setTournamentCreated] = useState(false);
+  
+  // Track if user confirmed discard (to prevent beforeRemove loop)
+  const [isDiscarding, setIsDiscarding] = useState(false);
+
+  // Go back to Home - uses popToTop for correct "back" animation
+  const goBackToHome = useCallback(() => {
+    // Only pop if there's somewhere to go back to
+    if (navigation.canGoBack()) {
+      navigation.dispatch(StackActions.popToTop());
+    }
+  }, [navigation]);
+
+  // Handle back button press - show confirmation if there are unsaved changes
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // If tournament was created or user confirmed discard, allow navigation
+      if (tournamentCreated || isDiscarding || !hasUnsavedChanges) {
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Show confirmation alert
+      Alert.alert(
+        'Discard Tournament?',
+        'You have unsaved changes. Are you sure you want to leave? Your progress will be lost.',
+        [
+          { text: 'Keep Editing', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              // Set flag to bypass beforeRemove on the next navigation
+              setIsDiscarding(true);
+            },
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, hasUnsavedChanges, tournamentCreated, isDiscarding]);
+  
+  // When isDiscarding becomes true, go back to home
+  useEffect(() => {
+    if (isDiscarding) {
+      goBackToHome();
+    }
+  }, [isDiscarding, goBackToHome]);
 
   const selectPlayerGroup = (group: PlayerGroup) => {
     setSelectedGroup(group);
@@ -131,13 +195,22 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
         parseCurrency(buyIn)
       );
 
+      // Mark as created so blur listener doesn't reset the stack
+      setTournamentCreated(true);
+      
       Alert.alert(
         'Success',
         'Tournament created successfully!',
         [
           {
             text: 'OK',
-            onPress: () => navigation.navigate('Tournament', { tournamentId }),
+            onPress: () => {
+              // Replace CreateTournament with Tournament screen
+              // This keeps HomeMain in the stack, so back from Tournament goes to Home
+              navigation.dispatch(
+                StackActions.replace('Tournament', { tournamentId })
+              );
+            },
           },
         ]
       );
@@ -149,7 +222,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const renderPlayer = ({ item }: { item: Player }) => {
+  const renderPlayer = useCallback(({ item }: { item: Player }) => {
     const isSelected = selectedPlayers.some(p => p.id === item.id);
     
     return (
@@ -162,20 +235,16 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
             {item.name}
           </Text>
           {item.nickname && (
-            <Text style={[styles.playerNickname, isSelected && styles.playerNicknameSelected]}>
-              "{item.nickname}"
-            </Text>
+            <Text style={styles.playerNickname}>"{item.nickname}"</Text>
           )}
-          <Text style={[styles.playerGender, isSelected && styles.playerGenderSelected]}>
-            {item.gender}
-          </Text>
+          <Text style={styles.playerGender}>{item.gender}</Text>
         </View>
         <View style={[styles.selectionIndicator, isSelected && styles.selectionIndicatorSelected]}>
-          {isSelected && <Text style={styles.checkmark}>✓</Text>}
+          {isSelected && <MaterialIcons name="check" size={16} color="#FFFFFF" />}
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [selectedPlayers, styles, togglePlayerSelection]);
 
   const teamModeOptions = [
     {
@@ -202,18 +271,32 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader
+        variant="create"
+        title="New Tournament"
+        subtitle="Set up your bracket and start competing"
+        accentColor={theme.colors.primary}
+        stats={[
+          { label: 'players available', value: allPlayers.length, icon: 'person' },
+          { label: 'groups ready', value: playerGroups.length, icon: 'group-work' },
+        ]}
+      />
       <ScrollView style={styles.scrollView}>
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Tournament Name */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tournament Name</Text>
           <TextInput
+            style={styles.input}
             value={tournamentName}
             onChangeText={setTournamentName}
             placeholder="Enter tournament name"
+            placeholderTextColor={theme.colors.text.tertiary}
             autoCapitalize="words"
           />
-        </Card>
+        </View>
 
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Buy In */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Buy In Amount</Text>
           <View style={styles.currencyInputContainer}>
             <Text style={styles.currencySymbol}>$</Text>
@@ -222,12 +305,14 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
               value={buyIn}
               onChangeText={(text) => setBuyIn(formatCurrencyInput(text))}
               placeholder="0.00"
+              placeholderTextColor={theme.colors.text.tertiary}
               keyboardType="decimal-pad"
             />
           </View>
-        </Card>
+        </View>
 
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Team Mode */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Team Creation Mode</Text>
           {teamModeOptions.map((option) => (
             <TouchableOpacity
@@ -238,20 +323,13 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
               ]}
               onPress={() => setTeamMode(option.mode)}>
               <View style={styles.modeInfo}>
-                <Text
-                  style={[
-                    styles.modeTitle,
-                    teamMode === option.mode && styles.modeTitleSelected,
-                  ]}>
+                <Text style={[
+                  styles.modeTitle,
+                  teamMode === option.mode && styles.modeTitleSelected,
+                ]}>
                   {option.title}
                 </Text>
-                <Text
-                  style={[
-                    styles.modeDescription,
-                    teamMode === option.mode && styles.modeDescriptionSelected,
-                  ]}>
-                  {option.description}
-                </Text>
+                <Text style={styles.modeDescription}>{option.description}</Text>
               </View>
               <View style={[
                 styles.radioButton,
@@ -261,18 +339,16 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           ))}
-        </Card>
+        </View>
 
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Player Groups */}
+        <View style={styles.section}>
           <View style={styles.sectionTitleContainer}>
-            <Text style={styles.sectionTitleInContainer}>Player Groups (Optional)</Text>
+            <Text style={styles.sectionTitle}>Player Groups</Text>
             {selectedGroup && (
-              <Button
-                title="Clear"
-                onPress={clearGroupSelection}
-                variant="ghost"
-                size="sm"
-              />
+              <TouchableOpacity onPress={clearGroupSelection}>
+                <Text style={styles.clearText}>Clear</Text>
+              </TouchableOpacity>
             )}
           </View>
           {playerGroups.length === 0 ? (
@@ -305,15 +381,12 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
                     ]}>
                       {item.name}
                     </Text>
-                    <Text style={[
-                      styles.groupPlayerCount,
-                      selectedGroup?.id === item.id && styles.groupPlayerCountSelected,
-                    ]}>
+                    <Text style={styles.groupPlayerCount}>
                       {item.players.length} players
                     </Text>
                   </View>
                   <View style={[styles.selectionIndicator, selectedGroup?.id === item.id && styles.selectionIndicatorSelected]}>
-                    {selectedGroup?.id === item.id && <Text style={styles.checkmark}>✓</Text>}
+                    {selectedGroup?.id === item.id && <MaterialIcons name="check" size={16} color="#FFFFFF" />}
                   </View>
                 </TouchableOpacity>
               )}
@@ -321,9 +394,10 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
               scrollEnabled={false}
             />
           )}
-        </Card>
+        </View>
 
-        <Card variant="outlined" padding="lg" style={styles.section}>
+        {/* Select Players */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Select Players ({selectedPlayers.length} selected)
           </Text>
@@ -347,7 +421,7 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
               scrollEnabled={false}
             />
           )}
-        </Card>
+        </View>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
@@ -366,171 +440,192 @@ const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background.coolGray,
+      backgroundColor: theme.colors.background.primary,
     },
     scrollView: {
       flex: 1,
     },
     section: {
-      margin: theme.spacing.lg,
-      marginBottom: theme.spacing.xl,
+      padding: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.subtle,
     },
     sectionTitle: {
-      ...theme.textStyles.h4,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.lg,
+      ...theme.textStyles.overline,
+      color: theme.colors.text.tertiary,
+      marginBottom: theme.spacing.md,
+    },
+    sectionTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: theme.spacing.md,
+    },
+    clearText: {
+      ...theme.textStyles.bodySmall,
+      color: theme.colors.primary,
+      fontWeight: theme.typography.fontWeights.medium,
+    },
+    input: {
+      ...theme.textStyles.body,
+      color: theme.colors.text.primary,
+      backgroundColor: theme.colors.background.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
+      borderRadius: theme.borderRadius.sm,
+      paddingHorizontal: theme.spacing.md,
+      height: 48,
+      textAlignVertical: 'center',
     },
     currencyInputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
+      backgroundColor: theme.colors.background.primary,
       borderWidth: 1,
-      borderColor: theme.colors.light.border,
-      borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.background.pureWhite,
+      borderColor: theme.colors.border.default,
+      borderRadius: theme.borderRadius.sm,
       paddingHorizontal: theme.spacing.md,
+      height: 48,
     },
     currencySymbol: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
-      marginRight: theme.spacing.xs,
-      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.tertiary,
     },
     currencyInput: {
       flex: 1,
       ...theme.textStyles.body,
-      color: theme.colors.text.richBlack,
-      paddingVertical: theme.spacing.md,
-      fontSize: 16,
+      color: theme.colors.text.primary,
+      paddingLeft: theme.spacing.xs,
+      height: '100%',
+      textAlignVertical: 'center',
     },
     modeOption: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: theme.spacing.md,
       borderWidth: 1,
-      borderColor: theme.colors.light.border,
+      borderColor: theme.colors.border.subtle,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
-      backgroundColor: theme.colors.background.pureWhite,
+      marginBottom: theme.spacing.sm,
+      backgroundColor: theme.colors.card,
     },
     modeOptionSelected: {
-      backgroundColor: `${theme.colors.selection.secondary}15`, // 15% opacity
-      borderColor: theme.colors.selection.secondary,
-      borderWidth: 2,
-      shadowColor: theme.colors.selection.secondary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      backgroundColor: `${theme.colors.primary}10`,
+      borderColor: theme.colors.primary,
     },
     modeInfo: {
       flex: 1,
     },
     modeTitle: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.xs,
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+      marginBottom: 2,
     },
     modeTitleSelected: {
-      color: theme.colors.text.richBlack,
-      fontWeight: '600',
+      color: theme.colors.primary,
     },
     modeDescription: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
-      lineHeight: 18,
-    },
-    modeDescriptionSelected: {
-      color: theme.colors.text.darkGray,
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
     },
     radioButton: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
       borderWidth: 2,
-      borderColor: theme.colors.light.border,
+      borderColor: theme.colors.border.default,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'transparent',
     },
     radioButtonSelectedContainer: {
-      borderColor: theme.colors.selection.secondary,
+      borderColor: theme.colors.primary,
     },
     radioButtonSelected: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: theme.colors.selection.secondary,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: theme.colors.primary,
     },
     playerCard: {
       flexDirection: 'row',
       alignItems: 'center',
       padding: theme.spacing.md,
       borderWidth: 1,
-      borderColor: theme.colors.light.border,
+      borderColor: theme.colors.border.subtle,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
-      backgroundColor: theme.colors.background.pureWhite,
+      marginBottom: theme.spacing.sm,
+      backgroundColor: theme.colors.card,
     },
     playerCardSelected: {
-      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
-      borderColor: theme.colors.accent.successGreen,
-      borderWidth: 2,
-      shadowColor: theme.colors.accent.successGreen,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      backgroundColor: `${theme.colors.primary}10`,
+      borderColor: theme.colors.primary,
     },
     playerInfo: {
       flex: 1,
     },
     playerName: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.richBlack,
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
       marginBottom: 2,
     },
     playerNameSelected: {
-      color: theme.colors.text.richBlack,
-      fontWeight: '600',
+      color: theme.colors.primary,
     },
     playerNickname: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
       fontStyle: 'italic',
       marginBottom: 2,
     },
-    playerNicknameSelected: {
-      color: theme.colors.text.darkGray,
-      fontWeight: '500',
-    },
     playerGender: {
       ...theme.textStyles.caption,
-      color: theme.colors.text.mediumGray,
+      color: theme.colors.text.tertiary,
       textTransform: 'capitalize',
     },
-    playerGenderSelected: {
-      color: theme.colors.text.mediumGray,
-      fontWeight: '500',
-    },
     selectionIndicator: {
-      width: 32,
-      height: 32,
+      width: 24,
+      height: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 16,
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderColor: theme.colors.light.border,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border.default,
     },
     selectionIndicatorSelected: {
-      backgroundColor: theme.colors.accent.successGreen,
-      borderColor: theme.colors.accent.successGreen,
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
-    checkmark: {
+    groupCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.sm,
+      backgroundColor: theme.colors.card,
+    },
+    groupCardSelected: {
+      backgroundColor: `${theme.colors.primary}10`,
+      borderColor: theme.colors.primary,
+    },
+    groupInfo: {
+      flex: 1,
+    },
+    groupName: {
       ...theme.textStyles.body,
-      color: theme.colors.background.pureWhite,
-      fontWeight: 'bold',
-      fontSize: 16,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
+      marginBottom: 2,
+    },
+    groupNameSelected: {
+      color: theme.colors.primary,
+    },
+    groupPlayerCount: {
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
     },
     emptyState: {
       alignItems: 'center',
@@ -538,13 +633,14 @@ const createStyles = (theme: Theme) =>
     },
     emptyStateText: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
       textAlign: 'center',
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing.md,
     },
     buttonContainer: {
       padding: theme.spacing.lg,
-      paddingTop: theme.spacing.xl,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border.subtle,
     },
     loadingContainer: {
       flex: 1,
@@ -553,58 +649,8 @@ const createStyles = (theme: Theme) =>
     },
     loadingText: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
-    },
-    sectionTitleContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: theme.spacing.lg,
-    },
-    sectionTitleInContainer: {
-      ...theme.textStyles.h4,
-      color: theme.colors.text.richBlack,
-    },
-    groupCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: theme.spacing.md,
-      borderWidth: 1,
-      borderColor: theme.colors.light.border,
-      borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
-      backgroundColor: theme.colors.background.pureWhite,
-    },
-    groupCardSelected: {
-      backgroundColor: `${theme.colors.accent.successGreen}15`, // 15% opacity
-      borderColor: theme.colors.accent.successGreen,
-      borderWidth: 2,
-      shadowColor: theme.colors.accent.successGreen,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    groupInfo: {
-      flex: 1,
-    },
-    groupName: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.richBlack,
-      marginBottom: 2,
-    },
-    groupNameSelected: {
-      color: theme.colors.text.richBlack,
-      fontWeight: '600',
-    },
-    groupPlayerCount: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
-    },
-    groupPlayerCountSelected: {
-      color: theme.colors.text.darkGray,
-      fontWeight: '500',
+      color: theme.colors.text.secondary,
     },
   });
 
-export default CreateTournamentScreen; 
+export default CreateTournamentScreen;

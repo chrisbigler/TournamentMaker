@@ -1,36 +1,86 @@
 import { colors as baseColors, gradients, shadows } from './colors';
 import { textStyles, typography } from './typography';
-import { spacing, borderRadius, dimensions } from './spacing';
+import { spacing, borderRadius, dimensions, animation } from './spacing';
 
 export type ThemeMode = 'light' | 'dark';
 
 export const createTheme = (mode: ThemeMode) => {
   const palette = mode === 'light' ? baseColors.light : baseColors.dark;
 
+  // Build the colors object with both new and legacy mappings
   const colors = {
-    ...baseColors,
-    primary: {
-      ...baseColors.primary,
-      electricBlue: palette.primary,
-    },
+    // Primary accent (these are the canonical color values)
+    primary: baseColors.primary,
+    primaryLight: baseColors.primaryLight,
+    primaryDark: baseColors.primaryDark,
+    
+    // Semantic colors
+    semantic: baseColors.semantic,
+    
+    // Current mode palette
     background: {
-      pureWhite: palette.background,
-      coolGray: palette.card,
-      lightGray: palette.surface,
+      ...palette.background,
+      // Legacy aliases
+      pureWhite: palette.background.primary,
+      coolGray: palette.background.secondary,
+      lightGray: palette.background.tertiary,
     },
+    border: palette.border,
     text: {
+      ...palette.text,
+      // Legacy aliases
       richBlack: palette.text.primary,
       darkGray: palette.text.secondary,
       mediumGray: palette.text.tertiary,
       lightGray: palette.text.disabled,
-      white: baseColors.text.white,
+      white: '#FFFFFF',
+    },
+    surface: palette.surface,
+    card: palette.card,
+    
+    // Action colors (simplified)
+    action: {
+      primary: baseColors.primary,
+      secondary: palette.text.secondary,
+      destructive: baseColors.semantic.error,
+      neutral: palette.text.tertiary,
+    },
+    
+    // Accent colors (for compatibility)
+    accent: {
+      successGreen: baseColors.semantic.success,
+      warningOrange: baseColors.semantic.warning,
+      errorRed: baseColors.semantic.error,
+      infoBlue: baseColors.semantic.info,
+    },
+    
+    // Legacy color mappings (use new names above instead)
+    // These can be removed once all screens are updated
+    legacy: {
+      deepNavy: palette.text.primary,
+      electricBlue: baseColors.primary,
+      slateGray: palette.text.secondary,
+      forestGreen: baseColors.primary,
+      warmOrange: baseColors.semantic.warning,
     },
     light: {
-      border: palette.border,
+      border: palette.border.default,
+      background: palette.background.primary,
+      surface: palette.surface,
+      card: palette.card,
+      text: palette.text,
+    },
+    dark: baseColors.dark,
+    selection: {
+      primary: baseColors.primary,
+      secondary: baseColors.primaryLight,
+      active: baseColors.semantic.warning,
+      highlight: baseColors.semantic.warning,
     },
   } as const;
 
   const theme = {
+    mode,
     colors,
     gradients,
     shadows,
@@ -39,60 +89,81 @@ export const createTheme = (mode: ThemeMode) => {
     spacing,
     borderRadius,
     dimensions,
+    animation,
 
+    // Component presets
     components: {
       card: {
-        backgroundColor: colors.background.coolGray,
-        borderRadius: borderRadius.lg,
+        backgroundColor: palette.card,
+        borderRadius: borderRadius.md,
+        borderWidth: 1,
+        borderColor: palette.border.subtle,
         padding: spacing.lg,
-        ...shadows.card,
+        ...shadows.low,
+      },
+      cardElevated: {
+        backgroundColor: palette.card,
+        borderRadius: borderRadius.md,
+        borderWidth: 1,
+        borderColor: palette.border.subtle,
+        padding: spacing.lg,
+        ...shadows.medium,
       },
       button: {
         primary: {
-          backgroundColor: colors.primary.electricBlue,
-          borderRadius: borderRadius.lg,
+          backgroundColor: baseColors.primary,
+          borderRadius: borderRadius.md,
           height: dimensions.buttonHeight.md,
-          paddingHorizontal: spacing.xl,
-          ...shadows.card,
+          paddingHorizontal: spacing.lg,
         },
         secondary: {
-          backgroundColor: colors.background.pureWhite,
+          backgroundColor: 'transparent',
           borderWidth: 1,
-          borderColor: colors.light.border,
-          borderRadius: borderRadius.lg,
+          borderColor: baseColors.primary,
+          borderRadius: borderRadius.md,
           height: dimensions.buttonHeight.md,
-          paddingHorizontal: spacing.xl,
-          ...shadows.card,
+          paddingHorizontal: spacing.lg,
         },
         ghost: {
           backgroundColor: 'transparent',
-          borderRadius: borderRadius.lg,
+          borderRadius: borderRadius.md,
           height: dimensions.buttonHeight.md,
-          paddingHorizontal: spacing.xl,
+          paddingHorizontal: spacing.lg,
         },
         outline: {
           backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderColor: colors.primary.electricBlue,
-          borderRadius: borderRadius.lg,
+          borderWidth: 1,
+          borderColor: palette.border.default,
+          borderRadius: borderRadius.md,
           height: dimensions.buttonHeight.md,
-          paddingHorizontal: spacing.xl,
+          paddingHorizontal: spacing.lg,
         },
       },
       input: {
-        backgroundColor: colors.background.pureWhite,
+        backgroundColor: palette.background.primary,
         borderWidth: 1,
-        borderColor: colors.light.border,
-        borderRadius: borderRadius.md,
+        borderColor: palette.border.default,
+        borderRadius: borderRadius.sm,
         height: dimensions.inputHeight.md,
-        paddingHorizontal: spacing.lg,
+        paddingHorizontal: spacing.md,
         fontSize: textStyles.body.fontSize,
       },
+      inputFocused: {
+        borderColor: baseColors.primary,
+        borderWidth: 1,
+      },
       header: {
-        backgroundColor: colors.primary.deepNavy,
+        backgroundColor: palette.background.primary,
+        borderBottomWidth: 1,
+        borderBottomColor: palette.border.subtle,
         height: 56,
         paddingHorizontal: spacing.lg,
-        ...shadows.card,
+      },
+      tabBar: {
+        backgroundColor: palette.background.primary,
+        borderTopWidth: 1,
+        borderTopColor: palette.border.subtle,
+        height: 56,
       },
     },
   } as const;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { Card, Button } from '../components';
 import { formatCurrency } from '../utils';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type TournamentScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Tournament'>;
 type TournamentScreenRouteProp = RouteProp<RootStackParamList, 'Tournament'>;
@@ -38,21 +39,13 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
   const loadTournament = async () => {
     try {
       setLoading(true);
-      console.log('Loading tournament with ID:', tournamentId);
       const tournamentData = await DatabaseService.getTournament(tournamentId);
-      console.log('Loaded tournament data:', JSON.stringify(tournamentData, null, 2));
       if (tournamentData) {
-        console.log('Tournament matches count:', tournamentData.matches?.length || 0);
-        console.log('Tournament teams count:', tournamentData.teams?.length || 0);
-        console.log('Tournament matches details:', tournamentData.matches);
-        
         // Auto-activate tournament if it's still in setup
         if (tournamentData.status === 'setup') {
-          console.log('Tournament is in setup, activating...');
           await TournamentService.activateTournament(tournamentId);
           // Reload tournament data to get updated status
           const updatedTournamentData = await DatabaseService.getTournament(tournamentId);
-          console.log('Updated tournament data after activation:', JSON.stringify(updatedTournamentData, null, 2));
           setTournament(updatedTournamentData);
         } else {
           setTournament(tournamentData);
@@ -60,19 +53,16 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
 
         // Fix tournaments that have teams but no matches (common issue with existing tournaments)
         if (tournamentData.teams.length >= 2 && tournamentData.matches.length === 0) {
-          console.log('Tournament has teams but no matches - attempting to fix...');
           try {
             await TournamentService.fixTournamentBracket(tournamentId);
             // Reload tournament data to get the newly created matches
             const fixedTournamentData = await DatabaseService.getTournament(tournamentId);
-            console.log('Tournament data after bracket fix:', JSON.stringify(fixedTournamentData, null, 2));
             setTournament(fixedTournamentData);
           } catch (error) {
             console.error('Failed to fix tournament bracket:', error);
           }
         }
       } else {
-        console.log('No tournament data found!');
         setTournament(tournamentData);
       }
     } catch (error) {
@@ -123,81 +113,85 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   }, [navigation, tournament]);
 
-  const renderMatch = ({ item: match }: { item: Match }) => {
+  const renderMatch = useCallback(({ item: match }: { item: Match }) => {
     const isComplete = match.isComplete;
     const isBye = !match.team2;
     
     return (
-      <Card 
-        variant="outlined" 
-        padding="lg"
+      <TouchableOpacity
         style={[
           styles.matchCard,
           isComplete && styles.matchCardComplete,
         ]}
+        onPress={() => {
+          if (!isBye && !isComplete) {
+            navigation.navigate('Match', { matchId: match.id, tournamentId });
+          }
+        }}
+        disabled={isBye || isComplete}
+        activeOpacity={0.7}
       >
-        <TouchableOpacity
-          onPress={() => {
-            if (!isBye && !isComplete) {
-              navigation.navigate('Match', { matchId: match.id, tournamentId });
-            }
-          }}
-          disabled={isBye || isComplete}
-          activeOpacity={0.7}
-        >
-          <View style={styles.matchHeader}>
-            <Text style={styles.roundText}>
-              {TournamentService.getRoundDisplayText(tournament?.matches || [], match.round)}
+        <View style={styles.matchHeader}>
+          <Text style={styles.roundText}>
+            {TournamentService.getRoundDisplayText(tournament?.matches || [], match.round)}
+          </Text>
+          {isComplete && (
+            <View style={styles.statusBadge}>
+              <MaterialIcons name="check" size={12} color={theme.colors.primary} />
+              <Text style={styles.statusText}>Complete</Text>
+            </View>
+          )}
+          {isBye && (
+            <View style={[styles.statusBadge, styles.byeBadge]}>
+              <Text style={styles.byeText}>BYE</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.teamsContainer}>
+          <View style={[
+            styles.teamRow,
+            match.winner?.id === match.team1.id && styles.winnerRow,
+          ]}>
+            <Text style={[
+              styles.teamName,
+              match.winner?.id === match.team1.id && styles.winnerText,
+            ]}>
+              {match.team1.teamName}
             </Text>
-            {isComplete && <Text style={styles.completeText}>✓ Complete</Text>}
-            {isBye && <Text style={styles.byeText}>BYE</Text>}
+            <Text style={[
+              styles.score,
+              match.winner?.id === match.team1.id && styles.winnerScore,
+            ]}>
+              {match.score1}
+            </Text>
           </View>
           
-          <View style={styles.teamsContainer}>
+          {match.team2 && (
             <View style={[
               styles.teamRow,
-              match.winner?.id === match.team1.id && styles.winnerRow,
+              match.winner?.id === match.team2.id && styles.winnerRow,
             ]}>
               <Text style={[
                 styles.teamName,
-                match.winner?.id === match.team1.id && styles.winnerText,
+                match.winner?.id === match.team2.id && styles.winnerText,
               ]}>
-                {match.team1.teamName}
+                {match.team2.teamName}
               </Text>
               <Text style={[
                 styles.score,
-                match.winner?.id === match.team1.id && styles.winnerText,
+                match.winner?.id === match.team2.id && styles.winnerScore,
               ]}>
-                {match.score1}
+                {match.score2}
               </Text>
             </View>
-            
-            {match.team2 && (
-              <View style={[
-                styles.teamRow,
-                match.winner?.id === match.team2.id && styles.winnerRow,
-              ]}>
-                <Text style={[
-                  styles.teamName,
-                  match.winner?.id === match.team2.id && styles.winnerText,
-                ]}>
-                  {match.team2.teamName}
-                </Text>
-                <Text style={[
-                  styles.score,
-                  match.winner?.id === match.team2.id && styles.winnerText,
-                ]}>
-                  {match.score2}
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-      </Card>
+          )}
+        </View>
+      </TouchableOpacity>
     );
-  };
+  }, [navigation, tournamentId, tournament?.matches, styles, theme]);
 
-  const renderRoundSection = (round: number, matches: Match[]) => (
+  const renderRoundSection = useCallback((round: number, matches: Match[]) => (
     <View key={round} style={styles.roundSection}>
       <Text style={styles.roundTitle}>
         {TournamentService.getRoundDisplayText(tournament?.matches || [], round)}
@@ -209,7 +203,31 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
         scrollEnabled={false}
       />
     </View>
+  ), [renderMatch, tournament?.matches, styles]);
+
+  // These hooks must be called unconditionally (before any early returns)
+  const bracketStructure = useMemo(
+    () => tournament ? TournamentService.getBracketStructure(tournament.matches) : {},
+    [tournament]
   );
+  const rounds = useMemo(
+    () => Object.keys(bracketStructure).map(Number).sort((a, b) => a - b),
+    [bracketStructure]
+  );
+  const isComplete = useMemo(
+    () => tournament ? TournamentService.isTournamentComplete(tournament.matches) : false,
+    [tournament]
+  );
+  const winner = useMemo(
+    () => tournament ? TournamentService.getTournamentWinner(tournament.matches) : null,
+    [tournament]
+  );
+  const runnerUp = useMemo(
+    () => tournament ? TournamentService.getTournamentRunnerUp(tournament.matches) : null,
+    [tournament]
+  );
+  const firstPrize = useMemo(() => tournament ? tournament.pot * 0.7 : 0, [tournament]);
+  const secondPrize = useMemo(() => tournament ? tournament.pot * 0.3 : 0, [tournament]);
 
   if (loading) {
     return (
@@ -238,70 +256,65 @@ const TournamentScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   }
 
-  const bracketStructure = TournamentService.getBracketStructure(tournament.matches);
-  console.log('Bracket structure:', bracketStructure);
-  const rounds = Object.keys(bracketStructure).map(Number).sort((a, b) => a - b);
-  console.log('Rounds to display:', rounds);
-  console.log('Number of rounds:', rounds.length);
-  console.log('Tournament matches passed to getBracketStructure:', tournament.matches?.length || 0);
-  const isComplete = TournamentService.isTournamentComplete(tournament.matches);
-  const winner = TournamentService.getTournamentWinner(tournament.matches);
-  const runnerUp = TournamentService.getTournamentRunnerUp(tournament.matches);
-  const firstPrize = tournament.pot * 0.7;
-  const secondPrize = tournament.pot * 0.3;
-
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Card variant="outlined" padding="lg" style={styles.headerCard}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Header Info */}
+        <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
               <Text style={styles.tournamentName}>{tournament.name}</Text>
               <Text style={styles.statusText}>
-                Status: {tournament.status} • Round {tournament.currentRound}
+                {tournament.status === 'completed' ? 'Completed' : `Round ${tournament.currentRound}`}
               </Text>
               {tournament.buyIn > 0 && (
                 <Text style={styles.buyInText}>
-                  Buy-in: {formatCurrency(tournament.buyIn)} • Total Pot: {formatCurrency(tournament.pot)}
+                  Buy-in: {formatCurrency(tournament.buyIn)} · Pot: {formatCurrency(tournament.pot)}
                 </Text>
               )}
             </View>
             
-            <Button
-              title="Delete"
+            <TouchableOpacity 
               onPress={deleteTournament}
-              variant="outline"
-              size="sm"
               style={styles.deleteButton}
-              textStyle={styles.deleteButtonText}
-            />
+            >
+              <MaterialIcons name="delete-outline" size={20} color={theme.colors.semantic.error} />
+            </TouchableOpacity>
           </View>
-        </Card>
+        </View>
         
+        {/* Winner Banner */}
         {isComplete && winner && (
-          <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
-            <Text style={styles.winnerTitle}>🏆 Champion</Text>
-            <Text style={styles.winnerName}>{winner.teamName}</Text>
-            {tournament.pot > 0 && (
-              <Text style={styles.payoutText}>Wins {formatCurrency(firstPrize)}</Text>
-            )}
-          </Card>
+          <View style={styles.winnerBanner}>
+            <View style={styles.winnerContent}>
+              <Text style={styles.winnerLabel}>Champion</Text>
+              <Text style={styles.winnerName}>{winner.teamName}</Text>
+              {tournament.pot > 0 && (
+                <Text style={styles.prizeText}>Wins {formatCurrency(firstPrize)}</Text>
+              )}
+            </View>
+          </View>
         )}
+        
         {isComplete && runnerUp && tournament.pot > 0 && (
-          <Card variant="outlined" padding="lg" style={styles.winnerContainer}>
-            <Text style={styles.winnerTitle}>🥈 Runner Up</Text>
-            <Text style={styles.winnerName}>{runnerUp.teamName}</Text>
-            <Text style={styles.payoutText}>Wins {formatCurrency(secondPrize)}</Text>
-          </Card>
+          <View style={styles.runnerUpBanner}>
+            <View style={styles.winnerContent}>
+              <Text style={styles.runnerUpLabel}>Runner Up</Text>
+              <Text style={styles.runnerUpName}>{runnerUp.teamName}</Text>
+              <Text style={styles.prizeText}>Wins {formatCurrency(secondPrize)}</Text>
+            </View>
+          </View>
         )}
-      </View>
 
-      <ScrollView style={styles.bracketContainer}>
-        {rounds.map(round => 
-          renderRoundSection(round, bracketStructure[round])
-        )}
+        {/* Bracket */}
+        <View style={styles.bracketContainer}>
+          {rounds.map(round => 
+            renderRoundSection(round, bracketStructure[round])
+          )}
+        </View>
       </ScrollView>
 
+      {/* Footer hint */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           Tap on a match to enter scores
@@ -315,20 +328,20 @@ const createStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background.coolGray,
+      backgroundColor: theme.colors.background.primary,
+    },
+    scrollContainer: {
+      flex: 1,
     },
     header: {
-      backgroundColor: theme.colors.background.coolGray,
       padding: theme.spacing.lg,
-      gap: theme.spacing.md,
-    },
-    headerCard: {
-      backgroundColor: theme.colors.background.pureWhite,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.subtle,
     },
     headerTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
     headerLeft: {
       flex: 1,
@@ -336,128 +349,167 @@ const createStyles = (theme: Theme) =>
     },
     tournamentName: {
       ...theme.textStyles.h3,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.xs,
+      color: theme.colors.text.primary,
+      marginBottom: 4,
     },
     statusText: {
       ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
     },
     buyInText: {
       ...theme.textStyles.bodySmall,
-      color: theme.colors.text.mediumGray,
-      marginTop: theme.spacing.xs,
+      color: theme.colors.text.tertiary,
+      marginTop: 4,
     },
     deleteButton: {
-      backgroundColor: 'transparent',
-      borderColor: theme.colors.accent.errorRed,
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.background.secondary,
     },
-    deleteButtonText: {
-      color: theme.colors.accent.errorRed,
+    winnerBanner: {
+      margin: theme.spacing.lg,
+      padding: theme.spacing.lg,
+      backgroundColor: `${theme.colors.primary}10`,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: `${theme.colors.primary}30`,
     },
-    winnerContainer: {
-      backgroundColor: theme.colors.background.pureWhite,
-      borderColor: theme.colors.accent.warningOrange,
+    winnerContent: {
       alignItems: 'center',
     },
-    winnerTitle: {
-      ...theme.textStyles.h4,
-      color: theme.colors.accent.warningOrange,
-      marginBottom: theme.spacing.xs,
+    winnerLabel: {
+      ...theme.textStyles.overline,
+      color: theme.colors.primary,
+      marginBottom: 4,
     },
     winnerName: {
-      ...theme.textStyles.bodyLarge,
-      color: theme.colors.accent.warningOrange,
-      fontWeight: theme.typography.fontWeights.semibold,
+      ...theme.textStyles.h3,
+      color: theme.colors.primary,
     },
-    payoutText: {
+    prizeText: {
       ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
-      marginTop: theme.spacing.xs,
+      color: theme.colors.text.secondary,
+      marginTop: 4,
+    },
+    runnerUpBanner: {
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.lg,
+      padding: theme.spacing.md,
+      backgroundColor: theme.colors.background.secondary,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+    },
+    runnerUpLabel: {
+      ...theme.textStyles.overline,
+      color: theme.colors.text.tertiary,
+      marginBottom: 4,
+    },
+    runnerUpName: {
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.text.primary,
     },
     bracketContainer: {
-      flex: 1,
       padding: theme.spacing.lg,
     },
     roundSection: {
-      marginBottom: theme.spacing['3xl'],
+      marginBottom: theme.spacing['2xl'],
     },
     roundTitle: {
-      ...theme.textStyles.h3,
-      color: theme.colors.text.richBlack,
-      marginBottom: theme.spacing.lg,
+      ...theme.textStyles.overline,
+      color: theme.colors.text.tertiary,
+      marginBottom: theme.spacing.md,
       textAlign: 'center',
     },
     matchCard: {
-      marginBottom: theme.spacing.md,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.subtle,
+      padding: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      ...theme.shadows.low,
     },
     matchCardComplete: {
-      backgroundColor: theme.colors.background.pureWhite,
-      borderColor: theme.colors.accent.successGreen,
-      borderWidth: 2,
+      borderLeftWidth: 3,
+      borderLeftColor: theme.colors.primary,
     },
     matchHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
     },
     roundText: {
-      ...theme.textStyles.label,
-      color: theme.colors.text.darkGray,
-    },
-    completeText: {
       ...theme.textStyles.caption,
-      color: theme.colors.accent.successGreen,
-      fontWeight: theme.typography.fontWeights.bold,
-      textTransform: 'uppercase',
+      color: theme.colors.text.tertiary,
+    },
+    statusBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+      backgroundColor: `${theme.colors.primary}15`,
+      borderRadius: theme.borderRadius.full,
+    },
+    statusText: {
+      ...theme.textStyles.caption,
+      color: theme.colors.primary,
+      fontWeight: theme.typography.fontWeights.medium,
+    },
+    byeBadge: {
+      backgroundColor: theme.colors.background.tertiary,
     },
     byeText: {
       ...theme.textStyles.caption,
-      color: theme.colors.accent.warningOrange,
-      fontWeight: theme.typography.fontWeights.bold,
-      textTransform: 'uppercase',
+      color: theme.colors.text.tertiary,
+      fontWeight: theme.typography.fontWeights.medium,
     },
     teamsContainer: {
-      gap: theme.spacing.sm,
+      gap: theme.spacing.xs,
     },
     teamRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: theme.spacing.md,
-      borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.background.coolGray,
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: theme.colors.background.secondary,
     },
     winnerRow: {
-      backgroundColor: theme.colors.accent.successGreen,
+      backgroundColor: `${theme.colors.primary}15`,
     },
     teamName: {
       ...theme.textStyles.body,
-      color: theme.colors.text.richBlack,
+      color: theme.colors.text.primary,
       flex: 1,
     },
     winnerText: {
-      fontWeight: theme.typography.fontWeights.bold,
-      color: theme.colors.text.white,
+      fontWeight: theme.typography.fontWeights.medium,
+      color: theme.colors.primary,
     },
     score: {
-      ...theme.textStyles.h4,
-      color: theme.colors.text.richBlack,
-      minWidth: 30,
+      ...theme.textStyles.body,
+      fontWeight: theme.typography.fontWeights.semibold,
+      color: theme.colors.text.secondary,
+      minWidth: 28,
       textAlign: 'center',
-      fontWeight: theme.typography.fontWeights.bold,
+    },
+    winnerScore: {
+      color: theme.colors.primary,
     },
     footer: {
-      padding: theme.spacing.lg,
+      padding: theme.spacing.md,
       alignItems: 'center',
-      backgroundColor: theme.colors.background.pureWhite,
+      backgroundColor: theme.colors.background.secondary,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.light.border,
+      borderTopColor: theme.colors.border.subtle,
     },
     footerText: {
-      ...theme.textStyles.bodySmall,
-      color: theme.colors.text.darkGray,
+      ...theme.textStyles.caption,
+      color: theme.colors.text.tertiary,
     },
     centerContainer: {
       flex: 1,
@@ -467,11 +519,11 @@ const createStyles = (theme: Theme) =>
     },
     loadingText: {
       ...theme.textStyles.body,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
     },
     errorText: {
       ...theme.textStyles.h4,
-      color: theme.colors.text.darkGray,
+      color: theme.colors.text.secondary,
       marginBottom: theme.spacing.xl,
       textAlign: 'center',
     },
@@ -480,4 +532,4 @@ const createStyles = (theme: Theme) =>
     },
   });
 
-export default TournamentScreen; 
+export default TournamentScreen;

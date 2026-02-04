@@ -9,8 +9,6 @@ export enum TeamCreationMode {
 class TournamentService {
   // Generate teams from players
   generateTeams(players: Player[], mode: TeamCreationMode): Team[] {
-    console.log('generateTeams called with', players.length, 'players, mode:', mode);
-    
     if (players.length < 2) {
       throw new Error('Need at least 2 players to create teams');
     }
@@ -23,11 +21,8 @@ class TournamentService {
   }
 
   private generateBoyGirlTeams(players: Player[]): Team[] {
-    console.log('generateBoyGirlTeams called');
     const males = players.filter(p => p.gender === Gender.MALE);
     const females = players.filter(p => p.gender === Gender.FEMALE);
-
-    console.log('Males:', males.length, 'Females:', females.length);
 
     if (males.length === 0 || females.length === 0) {
       throw new Error('Boy/Girl mode requires at least one male and one female player');
@@ -69,17 +64,13 @@ class TournamentService {
       teams.push(team);
     }
 
-    console.log('Generated', teams.length, 'boy/girl teams');
     return teams;
   }
 
   private generateManualTeams(players: Player[]): Team[] {
-    console.log('generateManualTeams called');
     // For manual mode, we'll just pair players sequentially
     const teams: Team[] = [];
     const shuffledPlayers = this.shuffleArray([...players]);
-
-    console.log('Shuffled players:', shuffledPlayers.length);
 
     // If odd number of players, exclude one for a bye in the bracket
     const playersToTeam = shuffledPlayers.length % 2 === 1 
@@ -95,7 +86,6 @@ class TournamentService {
         createdAt: new Date(),
       };
       teams.push(team);
-      console.log('Created team:', team.teamName);
     }
 
     // If there was an odd player, create a solo team for them
@@ -109,10 +99,8 @@ class TournamentService {
         createdAt: new Date(),
       };
       teams.push(team);
-      console.log('Created solo team for:', lastPlayer.name);
     }
 
-    console.log('Generated', teams.length, 'manual teams');
     return teams;
   }
 
@@ -262,8 +250,6 @@ class TournamentService {
         loserPlayer2.wins, 
         loserPlayer2.losses + 1
       );
-
-      console.log(`Updated player stats for match: ${winnerTeam.teamName} vs ${loserTeam.teamName}`);
     } catch (error) {
       console.error('Failed to update player statistics:', error);
       // Don't throw error to avoid breaking tournament flow
@@ -322,7 +308,6 @@ class TournamentService {
         status: TournamentStatus.COMPLETED,
         winnerId: winner.id
       });
-      console.log('Tournament completed:', tournamentId, 'Winner:', winner.teamName);
     } catch (error) {
       console.error('Failed to complete tournament:', error);
       throw error;
@@ -346,7 +331,6 @@ class TournamentService {
         previousRoundMatches.forEach(match => {
           if (match.winner && match.team2) { // Skip bye matches
             const differential = Math.abs(match.score1 - match.score2);
-            console.log(`Team ${match.winner.teamName} won with differential: ${differential}`);
             
             if (differential > biggestDifferential) {
               biggestDifferential = differential;
@@ -358,16 +342,13 @@ class TournamentService {
         if (teamWithBiggestDifferential && teamsToMatch.some(team => team.id === teamWithBiggestDifferential!.id)) {
           byeTeam = teamWithBiggestDifferential;
           teamsToMatch = teamsToMatch.filter(team => team.id !== byeTeam.id);
-          console.log(`Assigning bye to ${byeTeam.teamName} for biggest score differential: ${biggestDifferential}`);
         } else {
           // Fallback to random if team not found
           byeTeam = teamsToMatch.pop()!;
-          console.log(`Fallback: Assigning bye to ${byeTeam.teamName}`);
         }
       } else {
         // For first round or when no previous round data, assign randomly
         byeTeam = teamsToMatch.pop()!;
-        console.log(`Random bye assignment: ${byeTeam.teamName}`);
       }
       
       // Create bye match
@@ -418,15 +399,11 @@ class TournamentService {
     buyIn: number
   ): Promise<string> {
     try {
-      console.log('Creating tournament:', name, 'with', players.length, 'players');
-      
       // Generate teams
       const teams = this.generateTeams(players, teamMode);
-      console.log('Generated teams:', teams.length, teams);
       
       // Generate bracket
       const matches = this.generateBracket(teams);
-      console.log('Generated matches:', matches.length, matches);
 
       // Create tournament in database
       const pot = players.length * buyIn;
@@ -438,21 +415,17 @@ class TournamentService {
         pot,
         winner: undefined,
       });
-      console.log('Created tournament with ID:', tournamentId);
 
       // Save teams to database
       for (const team of teams) {
-        const teamId = await DatabaseService.createTeam(team, tournamentId);
-        console.log('Created team with ID:', teamId);
+        await DatabaseService.createTeam(team, tournamentId);
       }
 
       // Save matches to database
       for (const match of matches) {
-        const matchId = await DatabaseService.createMatch(match, tournamentId);
-        console.log('Created match with ID:', matchId);
+        await DatabaseService.createMatch(match, tournamentId);
       }
 
-      console.log('Tournament creation completed successfully');
       return tournamentId;
     } catch (error) {
       console.error('Failed to create tournament:', error);
@@ -468,7 +441,6 @@ class TournamentService {
         await DatabaseService.updateTournament(tournamentId, {
           status: TournamentStatus.ACTIVE
         });
-        console.log('Tournament activated:', tournamentId);
       }
     } catch (error) {
       console.error('Failed to activate tournament:', error);
@@ -484,27 +456,15 @@ class TournamentService {
         throw new Error('Tournament not found');
       }
 
-      console.log('Checking tournament for missing matches...');
-      console.log('Teams count:', tournament.teams.length);
-      console.log('Matches count:', tournament.matches.length);
-
       // If tournament has teams but no matches, regenerate the bracket
       if (tournament.teams.length >= 2 && tournament.matches.length === 0) {
-        console.log('Tournament has teams but no matches - regenerating bracket...');
-        
         // Generate bracket from existing teams
         const matches = this.generateBracket(tournament.teams);
-        console.log('Generated matches for existing tournament:', matches.length);
 
         // Save matches to database
         for (const match of matches) {
-          const matchId = await DatabaseService.createMatch(match, tournamentId);
-          console.log('Created match for existing tournament:', matchId);
+          await DatabaseService.createMatch(match, tournamentId);
         }
-
-        console.log('Tournament bracket fixed successfully');
-      } else {
-        console.log('Tournament bracket is already valid or has insufficient teams');
       }
     } catch (error) {
       console.error('Failed to fix tournament bracket:', error);
@@ -515,18 +475,13 @@ class TournamentService {
   // Reset all player statistics to 0-0
   async resetPlayerStatistics(): Promise<void> {
     try {
-      console.log('Starting player statistics reset...');
-
       // Get all players and reset their stats to 0
       const players = await DatabaseService.getAllPlayers();
-      console.log(`Found ${players.length} players to reset`);
 
       // Reset all player stats to 0
       for (const player of players) {
         await DatabaseService.updatePlayerStats(player.id, 0, 0);
       }
-
-      console.log('Player statistics reset completed!');
     } catch (error) {
       console.error('Failed to reset player statistics:', error);
       throw error;
@@ -536,78 +491,49 @@ class TournamentService {
   // Fix player statistics by recalculating from all completed matches
   async fixPlayerStatistics(): Promise<void> {
     try {
-      console.log('Starting player statistics fix...');
-
-      // Get all players and reset their stats to 0
+      // Get all players once and build a Map for O(1) lookups
       const players = await DatabaseService.getAllPlayers();
-      console.log(`Found ${players.length} players to reset`);
-
-      // Reset all player stats to 0
+      const playerStatsMap = new Map<string, { wins: number; losses: number }>();
+      
+      // Initialize all players with 0-0 stats
       for (const player of players) {
-        await DatabaseService.updatePlayerStats(player.id, 0, 0);
+        playerStatsMap.set(player.id, { wins: 0, losses: 0 });
       }
 
       // Get all tournaments
       const tournaments = await DatabaseService.getAllTournaments();
-      console.log(`Found ${tournaments.length} tournaments to analyze`);
-
-      let totalMatchesProcessed = 0;
 
       // Process each tournament's completed matches
       for (const tournament of tournaments) {
-        console.log(`Processing tournament: ${tournament.name}`);
-        
-        // Get all completed matches for this tournament
+        // Get all completed matches for this tournament (skip bye matches)
         const completedMatches = tournament.matches.filter(match => 
-          match.isComplete && match.team2 // Skip bye matches
+          match.isComplete && match.team2
         );
 
-        console.log(`   - Found ${completedMatches.length} completed matches`);
-
-        // Update player stats for each completed match
+        // Update stats in memory for each completed match
         for (const match of completedMatches) {
-          // Determine winner and loser teams
           const isTeam1Winner = match.score1 > match.score2;
           const winnerTeam = isTeam1Winner ? match.team1 : match.team2!;
           const loserTeam = isTeam1Winner ? match.team2! : match.team1;
 
-          // Get current stats for all players
-          const [winnerPlayer1, winnerPlayer2, loserPlayer1, loserPlayer2] = await Promise.all([
-            DatabaseService.getAllPlayers().then(players => players.find(p => p.id === winnerTeam.player1.id)!),
-            DatabaseService.getAllPlayers().then(players => players.find(p => p.id === winnerTeam.player2.id)!),
-            DatabaseService.getAllPlayers().then(players => players.find(p => p.id === loserTeam.player1.id)!),
-            DatabaseService.getAllPlayers().then(players => players.find(p => p.id === loserTeam.player2.id)!)
-          ]);
+          // Increment wins for winner team players
+          const winner1Stats = playerStatsMap.get(winnerTeam.player1.id);
+          const winner2Stats = playerStatsMap.get(winnerTeam.player2.id);
+          if (winner1Stats) winner1Stats.wins++;
+          if (winner2Stats) winner2Stats.wins++;
 
-          // Update winner team players (increment wins)
-          await DatabaseService.updatePlayerStats(
-            winnerPlayer1.id, 
-            winnerPlayer1.wins + 1, 
-            winnerPlayer1.losses
-          );
-          await DatabaseService.updatePlayerStats(
-            winnerPlayer2.id, 
-            winnerPlayer2.wins + 1, 
-            winnerPlayer2.losses
-          );
-
-          // Update loser team players (increment losses)
-          await DatabaseService.updatePlayerStats(
-            loserPlayer1.id, 
-            loserPlayer1.wins, 
-            loserPlayer1.losses + 1
-          );
-          await DatabaseService.updatePlayerStats(
-            loserPlayer2.id, 
-            loserPlayer2.wins, 
-            loserPlayer2.losses + 1
-          );
-
-          totalMatchesProcessed++;
+          // Increment losses for loser team players
+          const loser1Stats = playerStatsMap.get(loserTeam.player1.id);
+          const loser2Stats = playerStatsMap.get(loserTeam.player2.id);
+          if (loser1Stats) loser1Stats.losses++;
+          if (loser2Stats) loser2Stats.losses++;
         }
       }
 
-      console.log(`Player statistics fix completed! Processed ${totalMatchesProcessed} matches.`);
+      // Batch update all player stats to database
+      for (const [playerId, stats] of playerStatsMap) {
+        await DatabaseService.updatePlayerStats(playerId, stats.wins, stats.losses);
+      }
     } catch (error) {
       console.error('Failed to fix player statistics:', error);
       throw error;
@@ -630,18 +556,15 @@ class TournamentService {
 
   // Get tournament bracket structure for display
   getBracketStructure(matches: Match[]): { [round: number]: Match[] } {
-    console.log('getBracketStructure called with matches:', matches?.length || 0, matches);
     const bracket: { [round: number]: Match[] } = {};
     
     matches.forEach(match => {
-      console.log('Processing match:', match.id, 'round:', match.round);
       if (!bracket[match.round]) {
         bracket[match.round] = [];
       }
       bracket[match.round].push(match);
     });
 
-    console.log('Final bracket structure:', bracket);
     return bracket;
   }
 

@@ -13,34 +13,46 @@ export const spacing = {
   '8xl': 96,
 } as const;
 
+// Tighter, more refined border radii
 export const borderRadius = {
   none: 0,
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  '2xl': 20,
-  '3xl': 24,
-  full: 9999,
+  xs: 2,      // Tiny elements
+  sm: 4,      // Inputs, small buttons
+  md: 6,      // Cards, standard buttons
+  lg: 8,      // Modals, larger containers
+  xl: 12,     // Large cards (use sparingly)
+  '2xl': 16,  // Very large elements (use sparingly)
+  full: 9999, // Pills, avatars, circular elements
 } as const;
 
 export const dimensions = {
   buttonHeight: {
     sm: 32,
-    md: 44,
-    lg: 56,
+    md: 40,   // Reduced from 44
+    lg: 48,   // Reduced from 56
   },
   inputHeight: {
     sm: 32,
-    md: 44,
-    lg: 56,
+    md: 40,   // Reduced from 44
+    lg: 48,   // Reduced from 56
   },
   iconSize: {
-    xs: 16,
-    sm: 20,
-    md: 24,
-    lg: 32,
-    xl: 40,
+    xs: 14,
+    sm: 18,
+    md: 22,
+    lg: 28,
+    xl: 36,
   },
   touchableMinSize: 44, // Accessibility minimum touch target
-} as const; 
+} as const;
+
+// Animation timing tokens
+export const animation = {
+  fast: 100,      // Quick micro-interactions
+  normal: 180,    // Standard transitions
+  slow: 280,      // Elaborate animations
+  spring: {
+    damping: 15,
+    stiffness: 150,
+  },
+} as const;
