@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { colors as baseColors, gradients, shadows } from './colors';
 import { textStyles, typography } from './typography';
 import { spacing, borderRadius, dimensions, animation } from './spacing';
@@ -8,7 +9,10 @@ export const createTheme = (mode: ThemeMode) => {
   const palette = mode === 'light' ? baseColors.light : baseColors.dark;
   const inputLineHeight = textStyles.body.lineHeight;
   const inputHeight = dimensions.inputHeight.md;
-  const inputVerticalPadding = Math.round((inputHeight - inputLineHeight) / 2);
+  const inputVerticalPadding = Math.max(
+    0,
+    Math.round((inputHeight - inputLineHeight) / 2) - (Platform.OS === 'ios' ? 2 : 0)
+  );
 
   // Build the colors object with both new and legacy mappings
   const colors = {

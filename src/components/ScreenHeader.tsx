@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -263,7 +264,10 @@ const DetailHeader: React.FC<DetailHeaderInternalProps> = ({
 
 const createStyles = (theme: Theme) => {
   const inputLineHeight = theme.textStyles.body.lineHeight;
-  const inputVerticalPadding = Math.round((40 - inputLineHeight) / 2);
+  const inputVerticalPadding = Math.max(
+    0,
+    Math.round((40 - inputLineHeight) / 2) - (Platform.OS === 'ios' ? 2 : 0)
+  );
 
   return StyleSheet.create({
     // Create variant styles

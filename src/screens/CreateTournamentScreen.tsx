@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
   FlatList,
+  Platform,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect, StackActions } from '@react-navigation/native';
@@ -438,7 +439,10 @@ const CreateTournamentScreen: React.FC<Props> = ({ navigation }) => {
 
 const createStyles = (theme: Theme) => {
   const inputLineHeight = theme.textStyles.body.lineHeight;
-  const inputVerticalPadding = Math.round((48 - inputLineHeight) / 2);
+  const inputVerticalPadding = Math.max(
+    0,
+    Math.round((48 - inputLineHeight) / 2) - (Platform.OS === 'ios' ? 2 : 0)
+  );
 
   return StyleSheet.create({
     container: {
